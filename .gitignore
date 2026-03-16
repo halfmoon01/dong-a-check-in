@@ -1,0 +1,10 @@
+node_modules/
+registration.db
+registration.db-shm
+registration.db-wal
+server.log
+.env
+public/uploads/exhibition_logo*
+*.hwpx
+*.ai
+KakaoTalk_*.jpg

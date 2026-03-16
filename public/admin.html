@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>동아전람 관리자</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:-apple-system,'Malgun Gothic',sans-serif; background:#f0f2f5; color:#333; }
+
+    /* Login */
+    .login-page { display:flex; align-items:center; justify-content:center; min-height:100vh; }
+    .login-card { background:#fff; padding:40px; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.1); width:360px; }
+    .login-card h2 { text-align:center; margin-bottom:24px; color:#e53e3e; }
+    .login-card input { width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; font-size:15px; margin-bottom:12px; outline:none; }
+    .login-card input:focus { border-color:#e53e3e; }
+    .login-card button { width:100%; padding:14px; background:#e53e3e; color:#fff; border:none; border-radius:6px; font-size:16px; font-weight:700; cursor:pointer; }
+    .login-card button:hover { background:#c53030; }
+    .login-error { color:#e53e3e; font-size:13px; text-align:center; margin-top:8px; display:none; }
+
+    /* Admin Layout */
+    .admin-page { display:none; }
+    .admin-header { background:#fff; padding:16px 24px; display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #e0e0e0; }
+    .admin-header h1 { font-size:20px; color:#e53e3e; }
+    .btn-logout { padding:8px 16px; background:#666; color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:13px; }
+
+    .admin-content { max-width:1000px; margin:24px auto; padding:0 16px; }
+
+    .card { background:#fff; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.06); padding:24px; margin-bottom:20px; }
+    .card h3 { font-size:17px; margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid #eee; }
+
+    /* Toggle */
+    .toggle-row { display:flex; align-items:center; gap:16px; }
+    .toggle { width:60px; height:32px; background:#ccc; border-radius:16px; position:relative; cursor:pointer; transition:background 0.3s; }
+    .toggle.on { background:#48bb78; }
+    .toggle::after { content:''; position:absolute; width:26px; height:26px; background:#fff; border-radius:50%; top:3px; left:3px; transition:left 0.3s; }
+    .toggle.on::after { left:31px; }
+    .toggle-label { font-size:15px; font-weight:600; }
+
+    /* Form elements */
+    .admin-input { width:100%; padding:10px 12px; border:1px solid #ddd; border-radius:6px; font-size:14px; outline:none; }
+    .admin-input:focus { border-color:#e53e3e; }
+    .admin-textarea { width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; font-size:14px; min-height:150px; resize:vertical; outline:none; font-family:inherit; }
+    .admin-textarea:focus { border-color:#e53e3e; }
+    .btn { padding:10px 20px; border:none; border-radius:6px; font-size:14px; font-weight:600; cursor:pointer; }
+    .btn-primary { background:#e53e3e; color:#fff; }
+    .btn-primary:hover { background:#c53030; }
+    .btn-secondary { background:#4a5568; color:#fff; }
+    .btn-secondary:hover { background:#2d3748; }
+    .btn-success { background:#48bb78; color:#fff; }
+    .btn-success:hover { background:#38a169; }
+    .btn-danger { background:#e53e3e; color:#fff; font-size:12px; padding:6px 12px; }
+
+    .form-row { margin-bottom:14px; }
+    .form-row label { display:block; font-size:13px; font-weight:600; color:#555; margin-bottom:6px; }
+
+    /* Stats */
+    .stats-row { display:flex; gap:16px; margin-bottom:20px; flex-wrap:wrap; }
+    .stat-card { flex:1; min-width:120px; background:#fff; border-radius:10px; padding:20px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+    .stat-number { font-size:32px; font-weight:700; color:#e53e3e; }
+    .stat-label { font-size:13px; color:#888; margin-top:4px; }
+
+    /* Table */
+    .table-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    th { background:#f7f7f7; padding:10px 8px; text-align:left; font-weight:600; border-bottom:2px solid #e0e0e0; white-space:nowrap; }
+    td { padding:10px 8px; border-bottom:1px solid #eee; white-space:nowrap; }
+    tr:hover td { background:#fafafa; }
+
+    .btn-row { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+
+    /* File upload */
+    .file-upload { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .file-upload input[type="file"] { font-size:13px; }
+    .current-logo { max-height:60px; border:1px solid #eee; border-radius:4px; }
+
+    .msg { padding:8px 12px; border-radius:6px; font-size:13px; margin-top:8px; display:none; }
+    .msg-success { background:#f0fff4; color:#38a169; border:1px solid #c6f6d5; }
+    .msg-error { background:#fff5f5; color:#e53e3e; border:1px solid #fed7d7; }
+  </style>
+</head>
+<body>
+
+  <!-- Login Page -->
+  <div class="login-page" id="loginPage">
+    <div class="login-card">
+      <h2>관리자 로그인</h2>
+      <input type="text" id="loginId" placeholder="아이디">
+      <input type="password" id="loginPw" placeholder="비밀번호" onkeydown="if(event.key==='Enter')doLogin()">
+      <button onclick="doLogin()">로그인</button>
+      <div class="login-error" id="loginError">아이디 또는 비밀번호가 틀렸습니다.</div>
+    </div>
+  </div>
+
+  <!-- Admin Page -->
+  <div class="admin-page" id="adminPage">
+    <div class="admin-header">
+      <h1>동아전람 관리자</h1>
+      <div style="display:flex; gap:8px;">
+        <a href="/" style="padding:8px 16px; background:#3182ce; color:#fff; border:none; border-radius:6px; font-size:13px; text-decoration:none;">홈으로</a>
+        <button class="btn-logout" onclick="doLogout()">로그아웃</button>
+      </div>
+    </div>
+
+    <div class="admin-content">
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-number" id="statTotal">0</div>
+          <div class="stat-label">전체 등록</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="statToday">0</div>
+          <div class="stat-label">오늘 등록</div>
+        </div>
+      </div>
+
+      <!-- Server Toggle -->
+      <div class="card">
+        <h3>서버 상태</h3>
+        <div class="toggle-row">
+          <div class="toggle" id="serverToggle" onclick="toggleServer()"></div>
+          <span class="toggle-label" id="serverStatus">등록 열림</span>
+        </div>
+        <p style="font-size:12px; color:#888; margin-top:8px;">서버를 닫으면 새로운 등록이 차단됩니다.</p>
+      </div>
+
+      <!-- Exhibition Settings -->
+      <div class="card">
+        <h3>박람회 설정</h3>
+        <div class="form-row">
+          <label>박람회 이름</label>
+          <div style="display:flex; gap:8px;">
+            <input class="admin-input" id="exhibitionName" placeholder="예: 제70회 MBC건축박람회">
+            <button class="btn btn-primary" onclick="saveExhibitionName()">저장</button>
+          </div>
+        </div>
+        <div class="form-row" style="margin-top:16px;">
+          <label>박람회 로고 (JPG/PNG)</label>
+          <div class="file-upload">
+            <input type="file" id="logoFile" accept="image/*">
+            <button class="btn btn-primary" onclick="uploadLogo()">업로드</button>
+            <img class="current-logo" id="currentLogo" style="display:none;">
+          </div>
+        </div>
+        <div class="msg msg-success" id="settingsMsg"></div>
+      </div>
+
+      <!-- Privacy Text -->
+      <div class="card">
+        <h3>개인정보 수집·이용 동의 문구</h3>
+        <textarea class="admin-textarea" id="privacyText"></textarea>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="savePrivacy()">저장</button>
+        </div>
+        <div class="msg msg-success" id="privacyMsg"></div>
+      </div>
+
+      <!-- Account Change -->
+      <div class="card">
+        <h3>관리자 계정 변경</h3>
+        <div class="form-row">
+          <label>새 아이디</label>
+          <input class="admin-input" type="text" id="newAdminId" placeholder="새 아이디 입력">
+        </div>
+        <div class="form-row">
+          <label>새 비밀번호</label>
+          <input class="admin-input" type="password" id="newPassword" placeholder="새 비밀번호 입력">
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="changeAccount()">변경</button>
+        </div>
+        <div class="msg msg-success" id="pwMsg"></div>
+      </div>
+
+      <!-- Registration List -->
+      <div class="card">
+        <h3>등록 목록</h3>
+        <div class="btn-row" style="margin-bottom:16px;">
+          <button class="btn btn-success" onclick="exportExcel()">엑셀 다운로드</button>
+          <button class="btn btn-secondary" onclick="loadRegistrations()">새로고침</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>등록번호</th>
+                <th>성명</th>
+                <th>연락처</th>
+                <th>이메일</th>
+                <th>소속</th>
+                <th>주소</th>
+                <th>연령</th>
+                <th>직업군</th>
+                <th>등록일시</th>
+                <th>삭제</th>
+              </tr>
+            </thead>
+            <tbody id="regTableBody">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let authToken = localStorage.getItem('admin_token') || '';
+
+    // Auto login if token exists
+    if (authToken) {
+      showAdmin();
+    }
+
+    function headers() {
+      return { 'Authorization': 'Basic ' + authToken, 'Content-Type': 'application/json' };
+    }
+
+    async function doLogin() {
+      const id = document.getElementById('loginId').value;
+      const pw = document.getElementById('loginPw').value;
+      try {
+        const res = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, pw })
+        });
+        const data = await res.json();
+        if (data.success) {
+          authToken = data.token;
+          localStorage.setItem('admin_token', authToken);
+          showAdmin();
+        } else {
+          document.getElementById('loginError').style.display = 'block';
+        }
+      } catch {
+        document.getElementById('loginError').style.display = 'block';
+      }
+    }
+
+    function doLogout() {
+      authToken = '';
+      localStorage.removeItem('admin_token');
+      document.getElementById('adminPage').style.display = 'none';
+      document.getElementById('loginPage').style.display = 'flex';
+    }
+
+    async function showAdmin() {
+      try {
+        const res = await fetch('/api/admin/settings', { headers: headers() });
+        if (!res.ok) { doLogout(); return; }
+        const settings = await res.json();
+
+        document.getElementById('loginPage').style.display = 'none';
+        document.getElementById('adminPage').style.display = 'block';
+
+        // Load settings
+        const isOpen = settings.server_open === '1';
+        document.getElementById('serverToggle').classList.toggle('on', isOpen);
+        document.getElementById('serverStatus').textContent = isOpen ? '등록 열림' : '등록 닫힘';
+        document.getElementById('privacyText').value = settings.privacy_text || '';
+        document.getElementById('exhibitionName').value = settings.exhibition_name || '';
+
+        // Load logo
+        const logoRes = await fetch('/api/logo');
+        const logoData = await logoRes.json();
+        if (logoData.logo) {
+          document.getElementById('currentLogo').src = logoData.logo;
+          document.getElementById('currentLogo').style.display = 'block';
+        }
+
+        loadRegistrations();
+      } catch {
+        doLogout();
+      }
+    }
+
+    async function toggleServer() {
+      const toggle = document.getElementById('serverToggle');
+      const isOn = toggle.classList.contains('on');
+      const newValue = isOn ? '0' : '1';
+
+      await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: headers(),
+        body: JSON.stringify({ key: 'server_open', value: newValue })
+      });
+
+      toggle.classList.toggle('on');
+      document.getElementById('serverStatus').textContent = newValue === '1' ? '등록 열림' : '등록 닫힘';
+    }
+
+    async function savePrivacy() {
+      const text = document.getElementById('privacyText').value;
+      await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: headers(),
+        body: JSON.stringify({ key: 'privacy_text', value: text })
+      });
+      showMsg('privacyMsg', '저장되었습니다.');
+    }
+
+    async function saveExhibitionName() {
+      const name = document.getElementById('exhibitionName').value;
+      await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: headers(),
+        body: JSON.stringify({ key: 'exhibition_name', value: name })
+      });
+      showMsg('settingsMsg', '박람회 이름이 저장되었습니다.');
+    }
+
+    async function uploadLogo() {
+      const file = document.getElementById('logoFile').files[0];
+      if (!file) { alert('파일을 선택해주세요.'); return; }
+
+      const formData = new FormData();
+      formData.append('logo', file);
+
+      const res = await fetch('/api/admin/upload-logo', {
+        method: 'POST',
+        headers: { 'Authorization': 'Basic ' + authToken },
+        body: formData
+      });
+      const data = await res.json();
+      if (data.success) {
+        document.getElementById('currentLogo').src = data.path + '?t=' + Date.now();
+        document.getElementById('currentLogo').style.display = 'block';
+        showMsg('settingsMsg', '로고가 업로드되었습니다.');
+      }
+    }
+
+    async function changeAccount() {
+      const newId = document.getElementById('newAdminId').value.trim();
+      const newPw = document.getElementById('newPassword').value;
+      if (!newId && !newPw) { alert('아이디 또는 비밀번호를 입력해주세요.'); return; }
+
+      const currentId = atob(authToken).split(':')[0];
+      const currentPw = atob(authToken).split(':')[1];
+
+      if (newId) {
+        await fetch('/api/admin/settings', {
+          method: 'POST',
+          headers: headers(),
+          body: JSON.stringify({ key: 'admin_id', value: newId })
+        });
+      }
+      if (newPw) {
+        await fetch('/api/admin/settings', {
+          method: 'POST',
+          headers: headers(),
+          body: JSON.stringify({ key: 'admin_pw', value: newPw })
+        });
+      }
+
+      // Update token
+      const finalId = newId || currentId;
+      const finalPw = newPw || currentPw;
+      authToken = btoa(finalId + ':' + finalPw);
+      localStorage.setItem('admin_token', authToken);
+
+      var msg = [];
+      if (newId) msg.push('아이디');
+      if (newPw) msg.push('비밀번호');
+      showMsg('pwMsg', msg.join(', ') + '가 변경되었습니다.');
+    }
+
+    async function loadRegistrations() {
+      const res = await fetch('/api/admin/registrations', { headers: headers() });
+      const rows = await res.json();
+
+      document.getElementById('statTotal').textContent = rows.length;
+
+      const today = new Date().toISOString().slice(0, 10);
+      const todayCount = rows.filter(r => r.created_at && r.created_at.startsWith(today)).length;
+      document.getElementById('statToday').textContent = todayCount;
+
+      const tbody = document.getElementById('regTableBody');
+      tbody.innerHTML = '';
+      rows.forEach((row, idx) => {
+        const tr = document.createElement('tr');
+        const address = [row.address_sido, row.address_sigungu].filter(Boolean).join(' ');
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td>${row.reg_number || ''}</td>
+          <td>${row.name}</td>
+          <td>${row.phone}</td>
+          <td>${row.email || '-'}</td>
+          <td>${row.company || '-'}</td>
+          <td>${address || '-'}</td>
+          <td>${row.age_group || '-'}</td>
+          <td>${row.job_type || '-'}</td>
+          <td>${row.created_at || ''}</td>
+          <td><button class="btn-danger" onclick="deleteReg(${row.id})">삭제</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function deleteReg(id) {
+      if (!confirm('정말 삭제하시겠습니까?')) return;
+      await fetch(`/api/admin/registrations/${id}`, {
+        method: 'DELETE',
+        headers: headers()
+      });
+      loadRegistrations();
+    }
+
+    function exportExcel() {
+      const link = document.createElement('a');
+      link.href = '/api/admin/export';
+      // Add auth via URL workaround - use fetch instead
+      fetch('/api/admin/export', { headers: { 'Authorization': 'Basic ' + authToken } })
+        .then(res => res.blob())
+        .then(blob => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'registrations.xlsx';
+          a.click();
+          URL.revokeObjectURL(url);
+        });
+    }
+
+    function showMsg(id, text) {
+      const el = document.getElementById(id);
+      el.textContent = text;
+      el.style.display = 'block';
+      setTimeout(() => { el.style.display = 'none'; }, 3000);
+    }
+  </script>
+</body>
+</html>

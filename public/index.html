@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>동아전람 현장등록</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-logo">
+        <img src="/logo-full.png" alt="동아전람" id="defaultLogo">
+      </div>
+      <div class="header-badge">
+        <span class="badge-red"></span>
+        <span class="badge-gray"></span>
+        <span class="badge-gray"></span>
+        <span class="badge-blue"></span>
+      </div><!-- 2x2: 빨/회, 회/파 -->
+    </div>
+
+    <!-- Exhibition Banner -->
+    <div id="exhibitionBanner" style="text-align:center; background:#fafafa; border-bottom:1px solid #eee;">
+      <div class="logo-area">
+        <img id="exhibitionLogo" class="exhibition-logo" style="display:none;" alt="박람회 로고">
+      </div>
+      <h2 id="exhibitionName" style="font-size:20px; color:#333; padding:12px 20px;">현장 등록</h2>
+    </div>
+
+    <!-- Closed Page -->
+    <div class="closed-page" id="closedPage">
+      <h2>등록이 마감되었습니다</h2>
+      <p>현재 현장등록이 종료된 상태입니다.</p>
+    </div>
+
+    <!-- Registration Form -->
+    <form id="regForm" class="form-section" style="display:none;" novalidate>
+
+      <!-- 성명 -->
+      <div class="form-group" id="grpName">
+        <span class="form-label">성명 <span class="required">*</span></span>
+        <input type="text" class="form-input" id="name" name="name" placeholder="성명을 입력하세요">
+        <div class="error-msg" id="errName">성명을 입력해주세요.</div>
+      </div>
+
+      <!-- 휴대폰 번호 -->
+      <div class="form-group" id="grpPhone">
+        <span class="form-label">휴대폰 번호 <span class="required">*</span></span>
+        <div class="phone-row">
+          <select class="form-select" id="phonePrefix" name="phonePrefix">
+            <option value="010">010</option>
+            <option value="011">011</option>
+            <option value="016">016</option>
+            <option value="017">017</option>
+            <option value="018">018</option>
+            <option value="019">019</option>
+          </select>
+          <span class="phone-dash">-</span>
+          <input type="tel" class="form-input" id="phoneMid" maxlength="4" placeholder="0000" inputmode="numeric">
+          <span class="phone-dash">-</span>
+          <input type="tel" class="form-input" id="phoneLast" maxlength="4" placeholder="0000" inputmode="numeric">
+        </div>
+        <div class="error-msg" id="errPhone">휴대폰 번호를 정확히 입력해주세요.</div>
+        <div class="checkbox-row" style="margin-top:12px;">
+          <input type="checkbox" id="smsConsent" name="sms_consent">
+          <label for="smsConsent">문자(SMS), 카카오톡을 통한 박람회 개최 관련 정보 수신에 동의합니다. <span class="required">*</span></label>
+        </div>
+        <div class="error-msg" id="errSms">문자(SMS), 카카오톡 수신 동의에 체크해주세요.</div>
+      </div>
+
+      <!-- 이메일 -->
+      <div class="form-group" id="grpEmail">
+        <span class="form-label">이메일</span>
+        <div id="emailSection">
+          <div class="email-row">
+            <input type="text" class="form-input" id="emailId" placeholder="이메일">
+          </div>
+          <div class="email-domain-row">
+            <span class="email-at">@</span>
+            <input type="text" class="form-input" id="emailDomain" placeholder="">
+            <select class="form-select" id="emailDomainSelect" onchange="handleEmailDomain()">
+              <option value="">직접입력</option>
+              <option value="naver.com">naver.com</option>
+              <option value="gmail.com">gmail.com</option>
+              <option value="daum.net">daum.net</option>
+              <option value="hanmail.net">hanmail.net</option>
+              <option value="nate.com">nate.com</option>
+              <option value="kakao.com">kakao.com</option>
+            </select>
+          </div>
+        </div>
+        <button type="button" class="btn-no-email" id="btnNoEmail" onclick="toggleNoEmail()">이메일 없음</button>
+        <div class="error-msg" id="errEmail">이메일 주소를 정확히 입력하거나 '이메일 없음'을 선택해주세요.</div>
+        <div class="checkbox-row" id="emailConsentRow">
+          <input type="checkbox" id="emailConsent" name="email_consent">
+          <label for="emailConsent">이메일을 통한 박람회 개최 관련 정보 수신에 동의합니다. <span class="required">*</span></label>
+        </div>
+        <div class="error-msg" id="errEmailConsent">이메일 수신 동의에 체크해주세요.</div>
+      </div>
+
+      <!-- 소속(회사) -->
+      <div class="form-group" id="grpCompany">
+        <span class="form-label">소속(회사)</span>
+        <input type="text" class="form-input" id="company" name="company" placeholder="소속 또는 회사명을 입력하세요">
+      </div>
+
+      <!-- 주소 -->
+      <div class="form-group" id="grpAddress">
+        <span class="form-label">주소 <span class="required">*</span></span>
+        <div class="address-row">
+          <select class="form-select" id="addressSido" onchange="updateSigungu()">
+            <option value="">시/도 선택</option>
+          </select>
+          <select class="form-select" id="addressSigungu">
+            <option value="">시/군/구 선택</option>
+          </select>
+        </div>
+        <div class="error-msg" id="errAddress">주소를 선택해주세요.</div>
+      </div>
+
+      <!-- 연령 -->
+      <div class="form-group" id="grpAge">
+        <span class="form-label">연령 <span class="required">*</span></span>
+        <div class="radio-group">
+          <div class="radio-item">
+            <input type="radio" name="age_group" id="age20" value="20대">
+            <label for="age20">20대</label>
+          </div>
+          <div class="radio-item">
+            <input type="radio" name="age_group" id="age30" value="30대">
+            <label for="age30">30대</label>
+          </div>
+          <div class="radio-item">
+            <input type="radio" name="age_group" id="age40" value="40대">
+            <label for="age40">40대</label>
+          </div>
+          <div class="radio-item">
+            <input type="radio" name="age_group" id="age50" value="50대">
+            <label for="age50">50대</label>
+          </div>
+          <div class="radio-item">
+            <input type="radio" name="age_group" id="age60" value="60대 이상">
+            <label for="age60">60대 이상</label>
+          </div>
+        </div>
+        <div class="error-msg" id="errAge">연령대를 선택해주세요.</div>
+      </div>
+
+      <!-- 직업군 유형 -->
+      <div class="form-group" id="grpJob">
+        <span class="form-label">직업군 유형 <span class="required">*</span></span>
+        <div class="radio-group">
+          <div class="radio-item">
+            <input type="radio" name="job_type" id="job1" value="관련업계종사자">
+            <label for="job1">관련업계종사자</label>
+          </div>
+          <div class="radio-item">
+            <input type="radio" name="job_type" id="job2" value="예비건축주">
+            <label for="job2">예비건축주</label>
+          </div>
+          <div class="radio-item">
+            <input type="radio" name="job_type" id="job3" value="국내외 바이어">
+            <label for="job3">국내외 바이어</label>
+          </div>
+          <div class="radio-item">
+            <input type="radio" name="job_type" id="job4" value="학생">
+            <label for="job4">학생</label>
+          </div>
+          <div class="radio-item">
+            <input type="radio" name="job_type" id="job5" value="기타">
+            <label for="job5">기타</label>
+          </div>
+        </div>
+        <div class="error-msg" id="errJob">직업군을 선택해주세요.</div>
+      </div>
+
+      <!-- 개인정보 수집 동의 -->
+      <div class="form-group" id="grpPrivacy">
+        <span class="form-label">개인정보 수집·이용 동의 <span class="required">*</span></span>
+        <div class="privacy-box" id="privacyBox"></div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="privacyConsent" name="privacy_consent">
+          <label for="privacyConsent">위 개인정보 수집·이용에 동의합니다. (필수)</label>
+        </div>
+        <div class="error-msg" id="errPrivacy">개인정보 수집·이용에 동의해주세요.</div>
+      </div>
+
+      <!-- 등록 버튼 -->
+      <div class="submit-section">
+        <button type="submit" class="btn-submit" id="btnSubmit">현장 등록</button>
+      </div>
+    </form>
+
+    <!-- Completion Page -->
+    <div class="completion-page" id="completionPage">
+      <div class="completion-banner">
+        <h2>현장 등록 완료</h2>
+      </div>
+      <div class="completion-card">
+        <img class="qr-image" id="qrImage" alt="QR Code">
+        <div class="reg-number" id="regNumberDisplay"></div>
+        <div class="reg-name" id="regNameDisplay"></div>
+      </div>
+      <div class="completion-info">
+        <strong>현장등록이 완료되었습니다.</strong><br><br>
+        해당 화면을 제시하고<br>
+        입장권을 결제해주세요.
+      </div>
+    </div>
+  </div>
+
+  <!-- 관리자 버튼 -->
+  <div style="text-align:center; padding:20px;">
+    <a href="/admin.html" style="color:#aaa; font-size:12px; text-decoration:none;">관리자 로그인</a>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
