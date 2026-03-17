@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 3000;
 // Azure SQL connection config
 const dbConfig = {
   server: process.env.DB_SERVER,
-  database: process.env.DB_NAME || 'dongadb',
+  database: process.env.DB_NAME || 'dong-a-db',
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   options: {
