@@ -360,7 +360,7 @@ app.get('/api/admin/export', adminAuth, async (req, res) => {
 
     rows.forEach((row) => {
       sheet.addRow({
-        created_at: row.created_at,
+        created_at: row.created_at ? new Date(row.created_at) : null,
         phone: row.phone,
         name: row.name,
         address_sido: row.address_sido || '',
@@ -372,10 +372,10 @@ app.get('/api/admin/export', adminAuth, async (req, res) => {
       });
     });
 
-    sheet.eachRow(row => {
-      row.eachCell(cell => {
-        cell.numFmt = '@';
-      });
+    sheet.eachRow((row, rowNumber) => {
+      if (rowNumber === 1) return;
+      const dateCell = row.getCell(1);
+      dateCell.numFmt = 'yyyy-mm-dd hh:mm:ss';
     });
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
