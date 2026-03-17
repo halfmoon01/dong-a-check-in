@@ -348,7 +348,7 @@ const HTML_PAGE = `<!DOCTYPE html>
 
       loadRegistrations();
       loadAppStatus();
-    } catch {
+    } catch(e) {
       doLogout();
     }
   }
@@ -370,7 +370,7 @@ const HTML_PAGE = `<!DOCTYPE html>
         badge.textContent = data.state || '알 수 없음';
         badge.className = 'app-status-badge app-unknown';
       }
-    } catch {
+    } catch(e) {
       badge.textContent = '오류';
       badge.className = 'app-status-badge app-unknown';
     }
