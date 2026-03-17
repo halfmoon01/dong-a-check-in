@@ -258,6 +258,7 @@ const HTML_PAGE = `<!DOCTYPE html>
       <div class="btn-row" style="margin-bottom:12px;">
         <button class="btn btn-success" onclick="exportExcel()">엑셀 다운로드</button>
         <button class="btn btn-secondary" onclick="loadRegistrations()">새로고침</button>
+        <button class="btn" style="background:#94a3b8;color:#fff;font-size:12px;padding:8px 14px;" onclick="seedData()">목데이터 생성</button>
       </div>
       <div style="margin-bottom:12px;">
         <input type="text" class="admin-input" id="searchInput" placeholder="이름, 연락처, 등록번호, 소속으로 검색..." oninput="filterTable()" style="max-width:360px;">
@@ -575,15 +576,19 @@ const HTML_PAGE = `<!DOCTYPE html>
       // map field to cell id
     });
     // Replace cell contents with inputs
-    const cellMap = {
-      name: 'v-name-', phone: 'v-phone-', email: 'v-email-',
-      company: 'v-company-', age_group: 'v-age-', job_type: 'v-job-'
-    };
-    Object.entries(cellMap).forEach(([field, prefix]) => {
+    const textFields = { name: 'v-name-', phone: 'v-phone-', email: 'v-email-', company: 'v-company-', job_type: 'v-job-' };
+    Object.entries(textFields).forEach(([field, prefix]) => {
       const cell = document.getElementById(prefix + id);
       const val = row[field] || '';
       cell.innerHTML = '<input style="width:100%;padding:2px 4px;border:1px solid #e53e3e;border-radius:3px;font-size:12px;" value="' + val.replace(/"/g,'&quot;') + '" id="inp-' + field + '-' + id + '">';
     });
+    // Age group: dropdown
+    const ageCell = document.getElementById('v-age-' + id);
+    const ageOptions = ['10대','20대','30대','40대','50대','60대 이상'];
+    const ageVal = row.age_group || '';
+    ageCell.innerHTML = '<select id="inp-age_group-' + id + '" style="padding:2px 4px;border:1px solid #e53e3e;border-radius:3px;font-size:12px;">' +
+      ageOptions.map(o => '<option value="' + o + '"' + (o===ageVal?' selected':'') + '>' + o + '</option>').join('') +
+      '</select>';
     const btn = document.getElementById('btn-edit-' + id);
     btn.textContent = '저장';
     btn.onclick = function() { saveEdit(id); };
@@ -614,6 +619,14 @@ const HTML_PAGE = `<!DOCTYPE html>
     if (!confirm('정말 삭제하시겠습니까?')) return;
     await fetch('/registrations/' + id, { method: 'DELETE', headers: headers() });
     loadRegistrations();
+  }
+
+  async function seedData() {
+    if (!confirm('목데이터 40명을 생성하시겠습니까?')) return;
+    const res = await fetch('/seed', { method: 'POST', headers: headers() });
+    const data = await res.json();
+    if (data.success) { alert('목데이터 ' + data.count + '명 생성 완료!'); loadRegistrations(); }
+    else alert('오류: ' + (data.error||''));
   }
 
   function exportExcel() {
@@ -900,6 +913,56 @@ app.http('appStart', {
       const client = getAzureClient();
       await client.webApps.start(RESOURCE_GROUP, APP_NAME);
       return { jsonBody: { message: '서버를 시작했습니다.' } };
+    } catch (err) {
+      context.error(err);
+      return { status: 500, jsonBody: { error: err.message } };
+    }
+  }
+});
+
+app.http('seed', {
+  methods: ['POST'],
+  authLevel: 'anonymous',
+  route: 'seed',
+  handler: async (request, context) => {
+    if (!await verifyAdmin(request)) return { status: 401, jsonBody: { error: '인증 실패' } };
+    const names = ['김민준','이서연','박지훈','최수아','정다은','강민서','윤지우','임하은','조성현','한지민','신동현','오예린','백승호','류지현','고민재','문채원','서준혁','양소연','홍성민','권나영','남궁현','엄지은','천민호','방수진','탁상훈','나혜진','표지훈','변민아','황성준','이채은','김도현','박서현','최민준','정예진','강현우','윤소희','조민석','한아름','신지원','오준혁'];
+    const phones = ['010-1234-5678','010-2345-6789','010-3456-7890','010-4567-8901','010-5678-9012','010-6789-0123','010-7890-1234','010-8901-2345','010-9012-3456','010-1111-2222','010-2222-3333','010-3333-4444','010-4444-5555','010-5555-6666','010-6666-7777','010-7777-8888','010-8888-9999','010-9999-0000','010-1357-2468','010-2468-1357','010-1122-3344','010-3344-5566','010-5566-7788','010-7788-9900','010-9900-1122','010-1234-9876','010-9876-5432','010-5432-1098','010-1098-7654','010-7654-3210','010-1010-2020','010-2020-3030','010-3030-4040','010-4040-5050','010-5050-6060','010-6060-7070','010-7070-8080','010-8080-9090','010-9090-1010','010-1212-3434'];
+    const sidos = ['서울특별시','경기도','부산광역시','인천광역시','대구광역시','대전광역시','광주광역시','경상남도','경상북도','전라남도','전라북도','충청남도','충청북도','강원도','제주특별자치도'];
+    const sigungu = ['강남구','강서구','중구','북구','동구','서구','남구','수원시','성남시','고양시','부천시','안양시','용인시','창원시','청주시','천안시','전주시','포항시','제주시'];
+    const ages = ['10대','20대','20대','30대','30대','40대','40대','50대','60대 이상'];
+    const jobs = ['관련업계종사자','예비건축주','국내외 바이어','인테리어 수요자','일반관람객','관련업계종사자','인테리어 수요자','일반관람객'];
+    const companies = ['(주)한국건설','미래인테리어','블루디자인','삼성건설','현대건축','LG하우시스','KCC건설','롯데건설','GS건설',null,null,null];
+    const emails = ['example@naver.com','test@gmail.com','user@kakao.com',null,null,null];
+    try {
+      const p = await getPool();
+      const maxResult = await p.request().query('SELECT MAX(id) as maxId FROM registrations');
+      let nextId = (maxResult.recordset[0].maxId || 0) + 1;
+      let count = 0;
+      for (let i = 0; i < 40; i++) {
+        const now = new Date();
+        const dayOffset = Math.floor(Math.random() * 5);
+        const d = new Date(now.getTime() - dayOffset * 86400000);
+        const dateStr = d.getFullYear().toString().slice(2) + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
+        const regNumber = dateStr + String(nextId).padStart(5,'0');
+        const email = emails[Math.floor(Math.random()*emails.length)];
+        await p.request()
+          .input('name', sql.NVarChar, names[i])
+          .input('phone', sql.NVarChar, phones[i])
+          .input('email', sql.NVarChar, email)
+          .input('email_consent', sql.Int, email ? 1 : 0)
+          .input('company', sql.NVarChar, companies[Math.floor(Math.random()*companies.length)])
+          .input('address_sido', sql.NVarChar, sidos[Math.floor(Math.random()*sidos.length)])
+          .input('address_sigungu', sql.NVarChar, sigungu[Math.floor(Math.random()*sigungu.length)])
+          .input('age_group', sql.NVarChar, ages[Math.floor(Math.random()*ages.length)])
+          .input('job_type', sql.NVarChar, jobs[Math.floor(Math.random()*jobs.length)])
+          .input('reg_number', sql.NVarChar, regNumber)
+          .input('created_at', sql.DateTime, d)
+          .query(`INSERT INTO registrations (name,phone,sms_consent,email,email_consent,company,address_sido,address_sigungu,age_group,job_type,privacy_consent,reg_number,created_at)
+                  VALUES (@name,@phone,1,@email,@email_consent,@company,@address_sido,@address_sigungu,@age_group,@job_type,1,@reg_number,@created_at)`);
+        nextId++; count++;
+      }
+      return { jsonBody: { success: true, count } };
     } catch (err) {
       context.error(err);
       return { status: 500, jsonBody: { error: err.message } };
