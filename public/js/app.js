@@ -187,7 +187,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
   var jobRadios = document.querySelectorAll('input[name="job_type"]');
   for (var i = 0; i < jobRadios.length; i++) {
-    jobRadios[i].addEventListener('change', function() { clearError('grpJob', 'errJob'); });
+    jobRadios[i].addEventListener('change', function() {
+      clearError('grpJob', 'errJob');
+      document.getElementById('jobEtcWrap').style.display = this.value === '기타' ? 'block' : 'none';
+    });
   }
 
   privacyConsent.addEventListener('change', function() {
@@ -271,10 +274,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 직업군
-    if (!document.querySelector('input[name="job_type"]:checked')) {
+    var jobChecked = document.querySelector('input[name="job_type"]:checked');
+    if (!jobChecked) {
       showError('grpJob', 'errJob', '직업군을 선택해주세요.');
       if (!firstEl) firstEl = document.getElementById('grpJob');
       valid = false;
+    } else if (jobChecked.value === '기타') {
+      var etcVal = document.getElementById('jobEtcInput').value.trim();
+      if (!etcVal) {
+        showError('grpJob', 'errJob', '직업군을 직접 입력해주세요.');
+        if (!firstEl) firstEl = document.getElementById('grpJob');
+        valid = false;
+      }
     }
 
     // 개인정보 동의
@@ -318,7 +329,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     var ageGroup = document.querySelector('input[name="age_group"]:checked');
-    var jobType = document.querySelector('input[name="job_type"]:checked');
+    var jobTypeEl = document.querySelector('input[name="job_type"]:checked');
+    var jobTypeVal = jobTypeEl ? (jobTypeEl.value === '기타' ? ('기타: ' + document.getElementById('jobEtcInput').value.trim()) : jobTypeEl.value) : null;
 
     var body = {
       name: name,
@@ -330,7 +342,7 @@ document.addEventListener('DOMContentLoaded', function() {
       address_sido: addressSido.value,
       address_sigungu: addressSigungu.value,
       age_group: ageGroup ? ageGroup.value : null,
-      job_type: jobType ? jobType.value : null,
+      job_type: jobTypeVal,
       privacy_consent: privacyConsent.checked
     };
 

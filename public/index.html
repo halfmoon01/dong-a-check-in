@@ -128,6 +128,10 @@
         <span class="form-label">연령 <span class="required">*</span></span>
         <div class="radio-group">
           <div class="radio-item">
+            <input type="radio" name="age_group" id="age10" value="10대">
+            <label for="age10">10대</label>
+          </div>
+          <div class="radio-item">
             <input type="radio" name="age_group" id="age20" value="20대">
             <label for="age20">20대</label>
           </div>
@@ -154,7 +158,7 @@
       <!-- 직업군 유형 -->
       <div class="form-group" id="grpJob">
         <span class="form-label">직업군 유형 <span class="required">*</span></span>
-        <div class="radio-group">
+        <div class="radio-group" style="flex-direction:column; gap:10px;">
           <div class="radio-item">
             <input type="radio" name="job_type" id="job1" value="관련업계종사자">
             <label for="job1">관련업계종사자</label>
@@ -168,12 +172,19 @@
             <label for="job3">국내외 바이어</label>
           </div>
           <div class="radio-item">
-            <input type="radio" name="job_type" id="job4" value="학생">
-            <label for="job4">학생</label>
+            <input type="radio" name="job_type" id="job4" value="인테리어 수요자">
+            <label for="job4">인테리어 수요자</label>
           </div>
           <div class="radio-item">
-            <input type="radio" name="job_type" id="job5" value="기타">
-            <label for="job5">기타</label>
+            <input type="radio" name="job_type" id="job5" value="일반관람객">
+            <label for="job5">일반관람객</label>
+          </div>
+          <div class="radio-item">
+            <input type="radio" name="job_type" id="job6" value="기타" onchange="document.getElementById('jobEtcWrap').style.display='block'">
+            <label for="job6">기타 (직접 입력)</label>
+          </div>
+          <div id="jobEtcWrap" style="display:none; padding-left:24px;">
+            <input type="text" id="jobEtcInput" placeholder="직업군을 입력해주세요" style="width:100%; padding:10px 12px; border:1px solid #ddd; border-radius:6px; font-size:14px;">
           </div>
         </div>
         <div class="error-msg" id="errJob">직업군을 선택해주세요.</div>
@@ -214,10 +225,6 @@
     </div>
   </div>
 
-  <!-- 관리자 버튼 -->
-  <div style="text-align:center; padding:20px;">
-    <a href="/admin.html" style="color:#aaa; font-size:12px; text-decoration:none;">관리자 로그인</a>
-  </div>
 
   <script src="/js/app.js"></script>
 </body>

@@ -137,7 +137,10 @@ const HTML_PAGE = `<!DOCTYPE html>
 <div class="admin-page" id="adminPage">
   <div class="admin-header">
     <h1>동아전람 관리자</h1>
-    <button class="btn-logout" onclick="doLogout()">로그아웃</button>
+    <div style="display:flex; gap:8px;">
+      <a href="https://dong-a-registration-gkerh5gxgqhhbmhp.canadacentral-01.azurewebsites.net" target="_blank" style="padding:8px 16px; background:#3182ce; color:#fff; border-radius:6px; font-size:13px; text-decoration:none; font-weight:600;">메인 페이지</a>
+      <button class="btn-logout" onclick="doLogout()">로그아웃</button>
+    </div>
   </div>
 
   <div class="admin-content">
