@@ -1,0 +1,14 @@
+{
+  "name": "dong-a-control",
+  "version": "1.0.0",
+  "description": "Dong-A exhibition App Service control panel",
+  "main": "src/functions/*.js",
+  "scripts": {
+    "start": "func start"
+  },
+  "dependencies": {
+    "@azure/arm-appservice": "^15.0.0",
+    "@azure/identity": "^4.0.0",
+    "@azure/functions": "^4.0.0"
+  }
+}
