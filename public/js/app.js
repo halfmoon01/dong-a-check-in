@@ -382,13 +382,8 @@ document.addEventListener('DOMContentLoaded', function() {
   // ===== 설정 로드 (실시간 반영) =====
 
   function loadSettings() {
-    Promise.all([
-      fetch('/api/settings').then(function(r) { return r.json(); }),
-      fetch('/api/logo').then(function(r) { return r.json(); })
-    ])
-    .then(function(results) {
-      var settings = results[0];
-      var logoData = results[1];
+    fetch('/api/settings').then(function(r) { return r.json(); })
+    .then(function(settings) {
       var closedPage = document.getElementById('closedPage');
 
       if (settings.server_open === '0') {
@@ -410,9 +405,9 @@ document.addEventListener('DOMContentLoaded', function() {
         privacyBox.textContent = settings.privacy_text;
       }
 
-      if (logoData.logo) {
+      if (settings.exhibition_logo) {
         var logoImg = document.getElementById('exhibitionLogo');
-        logoImg.src = logoData.logo;
+        logoImg.src = settings.exhibition_logo;
         logoImg.style.display = 'block';
       }
     })
