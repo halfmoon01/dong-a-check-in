@@ -93,6 +93,8 @@ const HTML_PAGE = `<!DOCTYPE html>
     .btn-stop-app { background:#dc2626; color:#fff; }
     .btn-stop-app:hover { background:#b91c1c; }
     .btn-danger { background:#e53e3e; color:#fff; font-size:12px; padding:6px 12px; border:none; border-radius:4px; cursor:pointer; }
+    .btn-edit { background:#d97706; color:#fff; font-size:12px; padding:6px 12px; border:none; border-radius:4px; cursor:pointer; }
+    .btn-edit:hover { background:#b45309; }
     .form-row { margin-bottom:14px; }
     .form-row label { display:block; font-size:13px; font-weight:600; color:#555; margin-bottom:6px; }
     .stats-row { display:flex; gap:16px; margin-bottom:20px; flex-wrap:wrap; }
@@ -223,9 +225,12 @@ const HTML_PAGE = `<!DOCTYPE html>
     <!-- Registration List -->
     <div class="card">
       <h3>등록 목록</h3>
-      <div class="btn-row" style="margin-bottom:16px;">
+      <div class="btn-row" style="margin-bottom:12px;">
         <button class="btn btn-success" onclick="exportExcel()">엑셀 다운로드</button>
         <button class="btn btn-secondary" onclick="loadRegistrations()">새로고침</button>
+      </div>
+      <div style="margin-bottom:12px;">
+        <input type="text" class="admin-input" id="searchInput" placeholder="이름, 연락처, 등록번호, 소속으로 검색..." oninput="filterTable()" style="max-width:360px;">
       </div>
       <div class="table-wrap">
         <table>
@@ -233,7 +238,7 @@ const HTML_PAGE = `<!DOCTYPE html>
             <tr>
               <th>No</th><th>등록번호</th><th>성명</th><th>연락처</th>
               <th>이메일</th><th>소속</th><th>주소</th><th>연령</th>
-              <th>직업군</th><th>등록일시</th><th>삭제</th>
+              <th>직업군</th><th>등록일시</th><th>수정/삭제</th>
             </tr>
           </thead>
           <tbody id="regTableBody"></tbody>
@@ -419,33 +424,107 @@ const HTML_PAGE = `<!DOCTYPE html>
     showMsg('pwMsg', msg.join(', ') + '가 변경되었습니다.');
   }
 
+  let allRows = [];
+
   async function loadRegistrations() {
     const res = await fetch('/registrations', { headers: headers() });
-    const rows = await res.json();
-    document.getElementById('statTotal').textContent = rows.length;
+    allRows = await res.json();
+    document.getElementById('statTotal').textContent = allRows.length;
     const today = new Date().toISOString().slice(0, 10);
     document.getElementById('statToday').textContent =
-      rows.filter(r => r.created_at && r.created_at.toString().startsWith(today)).length;
+      allRows.filter(r => r.created_at && r.created_at.toString().startsWith(today)).length;
+    renderTable(allRows);
+  }
+
+  function filterTable() {
+    const q = document.getElementById('searchInput').value.trim().toLowerCase();
+    if (!q) { renderTable(allRows); return; }
+    const filtered = allRows.filter(r =>
+      (r.name||'').toLowerCase().includes(q) ||
+      (r.phone||'').includes(q) ||
+      (r.reg_number||'').toLowerCase().includes(q) ||
+      (r.company||'').toLowerCase().includes(q) ||
+      (r.email||'').toLowerCase().includes(q)
+    );
+    renderTable(filtered);
+  }
+
+  function renderTable(rows) {
     const tbody = document.getElementById('regTableBody');
     tbody.innerHTML = '';
     rows.forEach((row, idx) => {
       const tr = document.createElement('tr');
+      tr.id = 'row-' + row.id;
       const address = [row.address_sido, row.address_sigungu].filter(Boolean).join(' ');
       const dateStr = row.created_at ? new Date(row.created_at).toLocaleString('ko-KR') : '';
       tr.innerHTML =
         '<td>' + (idx+1) + '</td>' +
         '<td>' + (row.reg_number||'') + '</td>' +
-        '<td>' + row.name + '</td>' +
-        '<td>' + row.phone + '</td>' +
-        '<td>' + (row.email||'-') + '</td>' +
-        '<td>' + (row.company||'-') + '</td>' +
-        '<td>' + (address||'-') + '</td>' +
-        '<td>' + (row.age_group||'-') + '</td>' +
-        '<td>' + (row.job_type||'-') + '</td>' +
+        '<td id="v-name-' + row.id + '">' + (row.name||'') + '</td>' +
+        '<td id="v-phone-' + row.id + '">' + (row.phone||'') + '</td>' +
+        '<td id="v-email-' + row.id + '">' + (row.email||'-') + '</td>' +
+        '<td id="v-company-' + row.id + '">' + (row.company||'-') + '</td>' +
+        '<td id="v-addr-' + row.id + '">' + (address||'-') + '</td>' +
+        '<td id="v-age-' + row.id + '">' + (row.age_group||'-') + '</td>' +
+        '<td id="v-job-' + row.id + '">' + (row.job_type||'-') + '</td>' +
         '<td>' + dateStr + '</td>' +
-        '<td><button class="btn-danger" onclick="deleteReg(' + row.id + ')">삭제</button></td>';
+        '<td style="white-space:nowrap;">' +
+          '<button class="btn-edit" id="btn-edit-' + row.id + '" onclick="startEdit(' + row.id + ')">수정</button> ' +
+          '<button class="btn-danger" onclick="deleteReg(' + row.id + ')">삭제</button>' +
+        '</td>';
       tbody.appendChild(tr);
     });
+  }
+
+  function startEdit(id) {
+    const row = allRows.find(r => r.id === id);
+    if (!row) return;
+    const fields = [
+      ['name', row.name||''],
+      ['phone', row.phone||''],
+      ['email', row.email||''],
+      ['company', row.company||''],
+      ['age_group', row.age_group||''],
+      ['job_type', row.job_type||'']
+    ];
+    fields.forEach(([field, val]) => {
+      const cell = document.getElementById('v-' + field.split('_')[0] + (field==='age_group'?'age':field==='job_type'?'job':field==='company'?'company':field==='email'?'email':field==='phone'?'phone':'name') + '-' + id);
+      // map field to cell id
+    });
+    // Replace cell contents with inputs
+    const cellMap = {
+      name: 'v-name-', phone: 'v-phone-', email: 'v-email-',
+      company: 'v-company-', age_group: 'v-age-', job_type: 'v-job-'
+    };
+    Object.entries(cellMap).forEach(([field, prefix]) => {
+      const cell = document.getElementById(prefix + id);
+      const val = row[field] || '';
+      cell.innerHTML = '<input style="width:100%;padding:2px 4px;border:1px solid #e53e3e;border-radius:3px;font-size:12px;" value="' + val.replace(/"/g,'&quot;') + '" id="inp-' + field + '-' + id + '">';
+    });
+    const btn = document.getElementById('btn-edit-' + id);
+    btn.textContent = '저장';
+    btn.onclick = function() { saveEdit(id); };
+    btn.style.background = '#2563eb';
+  }
+
+  async function saveEdit(id) {
+    const fields = ['name','phone','email','company','age_group','job_type'];
+    const data = { id };
+    fields.forEach(f => {
+      const inp = document.getElementById('inp-' + f + '-' + id);
+      if (inp) data[f] = inp.value;
+    });
+    const res = await fetch('/registrations/' + id, {
+      method: 'PUT',
+      headers: headers(),
+      body: JSON.stringify(data)
+    });
+    const result = await res.json();
+    if (result.success) {
+      await loadRegistrations();
+    } else {
+      alert('저장 실패: ' + (result.error||''));
+    }
   }
 
   async function deleteReg(id) {
@@ -592,6 +671,37 @@ app.http('getRegistrations', {
       const result = await p.request()
         .query('SELECT * FROM registrations ORDER BY created_at DESC');
       return { jsonBody: result.recordset };
+    } catch (err) {
+      return { status: 500, jsonBody: { error: err.message } };
+    }
+  }
+});
+
+app.http('updateRegistration', {
+  methods: ['PUT'],
+  authLevel: 'anonymous',
+  route: 'registrations/{id}',
+  handler: async (request) => {
+    if (!await verifyAdmin(request)) return { status: 401, jsonBody: { error: '인증 실패' } };
+    const id = request.params.id;
+    const data = await request.json();
+    try {
+      const p = await getPool();
+      await p.request()
+        .input('id', sql.Int, parseInt(id))
+        .input('name', sql.NVarChar, data.name || null)
+        .input('phone', sql.NVarChar, data.phone || null)
+        .input('email', sql.NVarChar, data.email || null)
+        .input('company', sql.NVarChar, data.company || null)
+        .input('age_group', sql.NVarChar, data.age_group || null)
+        .input('job_type', sql.NVarChar, data.job_type || null)
+        .query(`
+          UPDATE registrations
+          SET name=@name, phone=@phone, email=@email,
+              company=@company, age_group=@age_group, job_type=@job_type
+          WHERE id=@id
+        `);
+      return { jsonBody: { success: true } };
     } catch (err) {
       return { status: 500, jsonBody: { error: err.message } };
     }
