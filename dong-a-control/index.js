@@ -295,6 +295,9 @@ const HTML_PAGE = `<!DOCTYPE html>
   async function doLogin() {
     const id = document.getElementById('loginId').value;
     const pw = document.getElementById('loginPw').value;
+    const errEl = document.getElementById('loginError');
+    errEl.style.display = 'none';
+    if (!id || !pw) { errEl.textContent = '아이디와 비밀번호를 입력해주세요.'; errEl.style.display = 'block'; return; }
     try {
       const res = await fetch('/login', {
         method: 'POST',
@@ -306,11 +309,16 @@ const HTML_PAGE = `<!DOCTYPE html>
         authToken = data.token;
         localStorage.setItem('admin_token', authToken);
         showAdmin();
+      } else if (res.status === 401) {
+        errEl.textContent = '아이디 또는 비밀번호가 틀렸습니다.';
+        errEl.style.display = 'block';
       } else {
-        document.getElementById('loginError').style.display = 'block';
+        errEl.textContent = '서버 오류가 발생했습니다. (DB 연결 확인 필요)';
+        errEl.style.display = 'block';
       }
     } catch {
-      document.getElementById('loginError').style.display = 'block';
+      errEl.textContent = '네트워크 오류가 발생했습니다.';
+      errEl.style.display = 'block';
     }
   }
 
