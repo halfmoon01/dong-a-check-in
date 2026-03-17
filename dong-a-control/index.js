@@ -480,7 +480,7 @@ const HTML_PAGE = `<!DOCTYPE html>
 app.http('page', {
   methods: ['GET'],
   authLevel: 'anonymous',
-  route: 'admin',
+  route: 'panel',
   handler: async () => ({
     status: 200,
     headers: { 'Content-Type': 'text/html; charset=utf-8' },
