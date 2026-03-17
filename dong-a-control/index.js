@@ -116,7 +116,11 @@ const HTML_PAGE = `<!DOCTYPE html>
     .app-running { background:#dcfce7; color:#15803d; }
     .app-stopped { background:#fee2e2; color:#b91c1c; }
     .app-unknown { background:#f3f4f6; color:#6b7280; }
+  .chart-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  @media(max-width:700px){ .chart-grid { grid-template-columns:1fr; } }
+  .chart-box { position:relative; height:260px; }
   </style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -181,14 +185,14 @@ const HTML_PAGE = `<!DOCTYPE html>
         <label>박람회 이름</label>
         <div style="display:flex; gap:8px;">
           <input class="admin-input" id="exhibitionName" placeholder="예: 제70회 MBC건축박람회">
-          <button class="btn btn-primary" onclick="saveExhibitionName()">저장</button>
+          <button class="btn btn-primary" onclick="saveExhibitionName()" style="white-space:nowrap; padding:10px 28px;">저장</button>
         </div>
       </div>
       <div class="form-row" style="margin-top:16px;">
         <label>박람회 로고 (JPG/PNG)</label>
-        <div class="file-upload">
-          <input type="file" id="logoFile" accept="image/*">
-          <button class="btn btn-primary" onclick="uploadLogo()">업로드</button>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <input type="file" id="logoFile" accept="image/*" style="flex:1; min-width:0; padding:8px; border:1px solid #ddd; border-radius:6px; font-size:14px;">
+          <button class="btn btn-primary" onclick="uploadLogo()" style="white-space:nowrap; padding:10px 28px;">저장</button>
           <img class="current-logo" id="currentLogo" style="display:none;">
         </div>
       </div>
@@ -200,7 +204,7 @@ const HTML_PAGE = `<!DOCTYPE html>
       <h3>개인정보 수집·이용 동의 문구</h3>
       <textarea class="admin-textarea" id="privacyText"></textarea>
       <div class="btn-row">
-        <button class="btn btn-primary" onclick="savePrivacy()">저장</button>
+        <button class="btn btn-primary" onclick="savePrivacy()" style="padding:10px 40px;">저장</button>
       </div>
       <div class="msg msg-success" id="privacyMsg"></div>
     </div>
@@ -217,9 +221,32 @@ const HTML_PAGE = `<!DOCTYPE html>
         <input class="admin-input" type="password" id="newPassword" placeholder="새 비밀번호 입력">
       </div>
       <div class="btn-row">
-        <button class="btn btn-secondary" onclick="changeAccount()">변경</button>
+        <button class="btn btn-secondary" onclick="changeAccount()" style="padding:10px 40px;">변경</button>
       </div>
       <div class="msg msg-success" id="pwMsg"></div>
+    </div>
+
+    <!-- Charts -->
+    <div class="card">
+      <h3>등록 통계</h3>
+      <div class="chart-grid" style="margin-bottom:20px;">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:8px;">날짜별 등록 추이</div>
+          <div class="chart-box"><canvas id="chartDaily"></canvas></div>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:8px;">연령대별</div>
+          <div class="chart-box"><canvas id="chartAge"></canvas></div>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:8px;">지역별 (시/도)</div>
+          <div class="chart-box"><canvas id="chartRegion"></canvas></div>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:8px;">직업군별</div>
+          <div class="chart-box"><canvas id="chartJob"></canvas></div>
+        </div>
+      </div>
     </div>
 
     <!-- Registration List -->
@@ -425,6 +452,58 @@ const HTML_PAGE = `<!DOCTYPE html>
   }
 
   let allRows = [];
+  let chartInstances = {};
+
+  const COLORS = ['#e53e3e','#3182ce','#38a169','#d69e2e','#805ad5','#dd6b20','#319795','#e53e3e','#2b6cb0','#276749'];
+
+  function renderCharts(rows) {
+    // 1. 날짜별 추이
+    const dayCounts = {};
+    rows.forEach(r => {
+      if (!r.created_at) return;
+      const d = new Date(r.created_at).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul', year:'numeric', month:'2-digit', day:'2-digit' });
+      dayCounts[d] = (dayCounts[d] || 0) + 1;
+    });
+    const dayLabels = Object.keys(dayCounts).sort();
+    const dayData = dayLabels.map(k => dayCounts[k]);
+
+    // 2. 연령대별
+    const ageCounts = {};
+    rows.forEach(r => { const v = r.age_group||'미입력'; ageCounts[v] = (ageCounts[v]||0)+1; });
+
+    // 3. 지역별
+    const regionCounts = {};
+    rows.forEach(r => { const v = r.address_sido||'미입력'; regionCounts[v] = (regionCounts[v]||0)+1; });
+    const regionSorted = Object.entries(regionCounts).sort((a,b)=>b[1]-a[1]);
+
+    // 4. 직업군별
+    const jobCounts = {};
+    rows.forEach(r => { const v = r.job_type||'미입력'; jobCounts[v] = (jobCounts[v]||0)+1; });
+
+    function makeChart(id, type, labels, data, opts) {
+      if (chartInstances[id]) chartInstances[id].destroy();
+      const ctx = document.getElementById(id);
+      if (!ctx) return;
+      chartInstances[id] = new Chart(ctx, {
+        type,
+        data: {
+          labels,
+          datasets: [{ data, backgroundColor: type==='line' ? 'rgba(229,62,62,0.15)' : COLORS, borderColor: type==='line' ? '#e53e3e' : COLORS, borderWidth: type==='line' ? 2 : 1, fill: type==='line', tension: 0.3, pointBackgroundColor: '#e53e3e' }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: type!=='line' && labels.length<=10, position:'right', labels:{font:{size:11}, boxWidth:12} } },
+          scales: type==='line' || type==='bar' ? { y: { beginAtZero:true, ticks:{stepSize:1} }, x: { ticks:{font:{size:10}} } } : {},
+          ...opts
+        }
+      });
+    }
+
+    makeChart('chartDaily', 'line', dayLabels, dayData);
+    makeChart('chartAge', 'doughnut', Object.keys(ageCounts), Object.values(ageCounts));
+    makeChart('chartRegion', 'bar', regionSorted.map(e=>e[0]), regionSorted.map(e=>e[1]));
+    makeChart('chartJob', 'doughnut', Object.keys(jobCounts), Object.values(jobCounts));
+  }
 
   async function loadRegistrations() {
     const res = await fetch('/registrations', { headers: headers() });
@@ -434,6 +513,7 @@ const HTML_PAGE = `<!DOCTYPE html>
     document.getElementById('statToday').textContent =
       allRows.filter(r => r.created_at && r.created_at.toString().startsWith(today)).length;
     renderTable(allRows);
+    renderCharts(allRows);
   }
 
   function filterTable() {
@@ -456,7 +536,7 @@ const HTML_PAGE = `<!DOCTYPE html>
       const tr = document.createElement('tr');
       tr.id = 'row-' + row.id;
       const address = [row.address_sido, row.address_sigungu].filter(Boolean).join(' ');
-      const dateStr = row.created_at ? new Date(row.created_at).toLocaleString('ko-KR') : '';
+      const dateStr = row.created_at ? new Date(row.created_at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) : '';
       tr.innerHTML =
         '<td>' + (idx+1) + '</td>' +
         '<td>' + (row.reg_number||'') + '</td>' +
