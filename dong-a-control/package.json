@@ -2,7 +2,7 @@
   "name": "dong-a-control",
   "version": "1.0.0",
   "description": "Dong-A exhibition App Service control panel",
-  "main": "src/functions/*.js",
+  "main": "src/functions/control.js",
   "scripts": {
     "start": "func start"
   },
