@@ -494,21 +494,20 @@ const HTML_PAGE = `<!DOCTYPE html>
     const jobCounts = {};
     rows.forEach(r => { const v = r.job_type||'미입력'; jobCounts[v] = (jobCounts[v]||0)+1; });
 
-    function makeChart(id, type, labels, data, opts) {
+    function makeChart(id, type, labels, data) {
       if (chartInstances[id]) chartInstances[id].destroy();
       const ctx = document.getElementById(id);
       if (!ctx) return;
       chartInstances[id] = new Chart(ctx, {
-        type,
+        type: type,
         data: {
-          labels,
-          datasets: [{ data, backgroundColor: type==='line' ? 'rgba(229,62,62,0.15)' : COLORS, borderColor: type==='line' ? '#e53e3e' : COLORS, borderWidth: type==='line' ? 2 : 1, fill: type==='line', tension: 0.3, pointBackgroundColor: '#e53e3e' }]
+          labels: labels,
+          datasets: [{ data: data, backgroundColor: type==='line' ? 'rgba(229,62,62,0.15)' : COLORS, borderColor: type==='line' ? '#e53e3e' : COLORS, borderWidth: type==='line' ? 2 : 1, fill: type==='line', tension: 0.3, pointBackgroundColor: '#e53e3e' }]
         },
         options: {
           responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { display: type!=='line' && labels.length<=10, position:'right', labels:{font:{size:11}, boxWidth:12} } },
-          scales: type==='line' || type==='bar' ? { y: { beginAtZero:true, ticks:{stepSize:1} }, x: { ticks:{font:{size:10}} } } : {},
-          ...opts
+          plugins: { legend: { display: type!=='line' && labels.length<=10, position: 'right', labels: { font: { size: 11 }, boxWidth: 12 } } },
+          scales: type==='line' || type==='bar' ? { y: { beginAtZero: true, ticks: { stepSize: 1 } }, x: { ticks: { font: { size: 10 } } } } : {}
         }
       });
     }
