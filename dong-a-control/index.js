@@ -263,6 +263,7 @@ const HTML_PAGE = `<!DOCTYPE html>
         <button class="btn btn-success" onclick="exportExcel()">엑셀 다운로드</button>
         <button class="btn btn-secondary" onclick="loadRegistrations()">새로고침</button>
         <button class="btn" style="background:#94a3b8;color:#fff;font-size:12px;padding:8px 14px;" onclick="seedData()">목데이터 생성</button>
+        <button class="btn btn-danger" style="font-size:12px;padding:8px 14px;" onclick="deleteAll()">전체 삭제</button>
       </div>
       <div style="margin-bottom:12px;">
         <input type="text" class="admin-input" id="searchInput" placeholder="이름, 연락처, 등록번호, 소속으로 검색..." oninput="filterTable()" style="max-width:360px;">
@@ -630,6 +631,15 @@ const HTML_PAGE = `<!DOCTYPE html>
     loadRegistrations();
   }
 
+  async function deleteAll() {
+    if (!confirm('전체 등록 데이터를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) return;
+    if (!confirm('정말로 전체 삭제하시겠습니까?')) return;
+    const res = await fetch('/registrations/all', { method: 'DELETE', headers: headers() });
+    const data = await res.json();
+    if (data.success) { loadRegistrations(); }
+    else alert('오류: ' + (data.error||''));
+  }
+
   async function seedData() {
     if (!confirm('목데이터 40명을 생성하시겠습니까?')) return;
     const res = await fetch('/seed', { method: 'POST', headers: headers() });
@@ -806,6 +816,22 @@ app.http('updateRegistration', {
               company=@company, age_group=@age_group, job_type=@job_type
           WHERE id=@id
         `);
+      return { jsonBody: { success: true } };
+    } catch (err) {
+      return { status: 500, jsonBody: { error: err.message } };
+    }
+  }
+});
+
+app.http('deleteAllRegistrations', {
+  methods: ['DELETE'],
+  authLevel: 'anonymous',
+  route: 'registrations/all',
+  handler: async (request) => {
+    if (!await verifyAdmin(request)) return { status: 401, jsonBody: { error: '인증 실패' } };
+    try {
+      const p = await getPool();
+      await p.request().query('DELETE FROM registrations');
       return { jsonBody: { success: true } };
     } catch (err) {
       return { status: 500, jsonBody: { error: err.message } };
