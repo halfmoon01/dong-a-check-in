@@ -43,6 +43,11 @@ async function initDb() {
   `);
 
   await pool.request().query(`
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('registrations') AND name = 'gender')
+    ALTER TABLE registrations ADD gender NVARCHAR(10)
+  `);
+
+  await pool.request().query(`
     IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='settings' AND xtype='U')
     CREATE TABLE settings (
       [key] NVARCHAR(100) PRIMARY KEY,
@@ -120,7 +125,7 @@ app.post('/api/register', checkServerOpen, async (req, res) => {
     const {
       name, phone, sms_consent, email, email_consent,
       company, address_sido, address_sigungu,
-      age_group, job_type, privacy_consent
+      gender, age_group, job_type, privacy_consent
     } = req.body;
 
     const errors = [];
@@ -158,13 +163,14 @@ app.post('/api/register', checkServerOpen, async (req, res) => {
       .input('company', sql.NVarChar, company || null)
       .input('address_sido', sql.NVarChar, address_sido || null)
       .input('address_sigungu', sql.NVarChar, address_sigungu || null)
+      .input('gender', sql.NVarChar, gender || null)
       .input('age_group', sql.NVarChar, age_group || null)
       .input('job_type', sql.NVarChar, job_type || null)
       .input('privacy_consent', sql.Int, privacy_consent ? 1 : 0)
       .input('reg_number', sql.NVarChar, regNumber)
       .query(`
-        INSERT INTO registrations (name, phone, sms_consent, email, email_consent, company, address_sido, address_sigungu, age_group, job_type, privacy_consent, reg_number)
-        VALUES (@name, @phone, @sms_consent, @email, @email_consent, @company, @address_sido, @address_sigungu, @age_group, @job_type, @privacy_consent, @reg_number)
+        INSERT INTO registrations (name, phone, sms_consent, email, email_consent, company, address_sido, address_sigungu, gender, age_group, job_type, privacy_consent, reg_number)
+        VALUES (@name, @phone, @sms_consent, @email, @email_consent, @company, @address_sido, @address_sigungu, @gender, @age_group, @job_type, @privacy_consent, @reg_number)
       `);
 
     res.json({ success: true, reg_number: regNumber, name });

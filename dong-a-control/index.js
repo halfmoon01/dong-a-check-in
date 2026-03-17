@@ -249,6 +249,10 @@ const HTML_PAGE = `<!DOCTYPE html>
           <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:8px;">직업군별</div>
           <div class="chart-box"><canvas id="chartJob"></canvas></div>
         </div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:8px;">성별</div>
+          <div class="chart-box"><canvas id="chartGender"></canvas></div>
+        </div>
       </div>
     </div>
 
@@ -503,10 +507,15 @@ const HTML_PAGE = `<!DOCTYPE html>
       });
     }
 
+    // 5. 성별
+    const genderCounts = {};
+    rows.forEach(r => { const v = r.gender||'미입력'; genderCounts[v] = (genderCounts[v]||0)+1; });
+
     makeChart('chartDaily', 'line', dayLabels, dayData);
     makeChart('chartAge', 'doughnut', Object.keys(ageCounts), Object.values(ageCounts));
     makeChart('chartRegion', 'bar', regionSorted.map(e=>e[0]), regionSorted.map(e=>e[1]));
     makeChart('chartJob', 'doughnut', Object.keys(jobCounts), Object.values(jobCounts));
+    makeChart('chartGender', 'doughnut', Object.keys(genderCounts), Object.values(genderCounts));
   }
 
   async function loadRegistrations() {
@@ -932,6 +941,7 @@ app.http('seed', {
     const sigungu = ['강남구','강서구','중구','북구','동구','서구','남구','수원시','성남시','고양시','부천시','안양시','용인시','창원시','청주시','천안시','전주시','포항시','제주시'];
     const ages = ['10대','20대','20대','30대','30대','40대','40대','50대','60대 이상'];
     const jobs = ['관련업계종사자','예비건축주','국내외 바이어','인테리어 수요자','일반관람객','관련업계종사자','인테리어 수요자','일반관람객'];
+    const genders = ['남성','남성','남성','여성','여성'];
     const companies = ['(주)한국건설','미래인테리어','블루디자인','삼성건설','현대건축','LG하우시스','KCC건설','롯데건설','GS건설',null,null,null];
     const emails = ['example@naver.com','test@gmail.com','user@kakao.com',null,null,null];
     try {
@@ -954,12 +964,13 @@ app.http('seed', {
           .input('company', sql.NVarChar, companies[Math.floor(Math.random()*companies.length)])
           .input('address_sido', sql.NVarChar, sidos[Math.floor(Math.random()*sidos.length)])
           .input('address_sigungu', sql.NVarChar, sigungu[Math.floor(Math.random()*sigungu.length)])
+          .input('gender', sql.NVarChar, genders[Math.floor(Math.random()*genders.length)])
           .input('age_group', sql.NVarChar, ages[Math.floor(Math.random()*ages.length)])
           .input('job_type', sql.NVarChar, jobs[Math.floor(Math.random()*jobs.length)])
           .input('reg_number', sql.NVarChar, regNumber)
           .input('created_at', sql.DateTime, d)
-          .query(`INSERT INTO registrations (name,phone,sms_consent,email,email_consent,company,address_sido,address_sigungu,age_group,job_type,privacy_consent,reg_number,created_at)
-                  VALUES (@name,@phone,1,@email,@email_consent,@company,@address_sido,@address_sigungu,@age_group,@job_type,1,@reg_number,@created_at)`);
+          .query(`INSERT INTO registrations (name,phone,sms_consent,email,email_consent,company,address_sido,address_sigungu,gender,age_group,job_type,privacy_consent,reg_number,created_at)
+                  VALUES (@name,@phone,1,@email,@email_consent,@company,@address_sido,@address_sigungu,@gender,@age_group,@job_type,1,@reg_number,@created_at)`);
         nextId++; count++;
       }
       return { jsonBody: { success: true, count } };

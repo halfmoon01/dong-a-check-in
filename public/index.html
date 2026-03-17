@@ -107,6 +107,10 @@
       <div class="form-group" id="grpCompany">
         <span class="form-label">소속(회사)</span>
         <input type="text" class="form-input" id="company" name="company" placeholder="소속 또는 회사명을 입력하세요">
+        <div class="checkbox-row" style="margin-top:8px;">
+          <input type="checkbox" id="noCompany" onchange="document.getElementById('company').disabled=this.checked; if(this.checked) document.getElementById('company').value='';">
+          <label for="noCompany">소속/회사 없음</label>
+        </div>
       </div>
 
       <!-- 주소 -->
@@ -121,6 +125,22 @@
           </select>
         </div>
         <div class="error-msg" id="errAddress">주소를 선택해주세요.</div>
+      </div>
+
+      <!-- 성별 -->
+      <div class="form-group" id="grpGender">
+        <span class="form-label">성별 <span class="required">*</span></span>
+        <div class="radio-group">
+          <div class="radio-item">
+            <input type="radio" name="gender" id="genderM" value="남성">
+            <label for="genderM">남성</label>
+          </div>
+          <div class="radio-item">
+            <input type="radio" name="gender" id="genderF" value="여성">
+            <label for="genderF">여성</label>
+          </div>
+        </div>
+        <div class="error-msg" id="errGender">성별을 선택해주세요.</div>
       </div>
 
       <!-- 연령 -->

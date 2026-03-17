@@ -266,6 +266,13 @@ document.addEventListener('DOMContentLoaded', function() {
       valid = false;
     }
 
+    // 성별
+    if (!document.querySelector('input[name="gender"]:checked')) {
+      showError('grpGender', 'errGender', '성별을 선택해주세요.');
+      if (!firstEl) firstEl = document.getElementById('grpGender');
+      valid = false;
+    }
+
     // 연령
     if (!document.querySelector('input[name="age_group"]:checked')) {
       showError('grpAge', 'errAge', '연령대를 선택해주세요.');
@@ -328,6 +335,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (eId && eDom) email = eId + '@' + eDom;
     }
 
+    var genderEl = document.querySelector('input[name="gender"]:checked');
     var ageGroup = document.querySelector('input[name="age_group"]:checked');
     var jobTypeEl = document.querySelector('input[name="job_type"]:checked');
     var jobTypeVal = jobTypeEl ? (jobTypeEl.value === '기타' ? ('기타: ' + document.getElementById('jobEtcInput').value.trim()) : jobTypeEl.value) : null;
@@ -341,6 +349,7 @@ document.addEventListener('DOMContentLoaded', function() {
       company: company.value.trim() || null,
       address_sido: addressSido.value,
       address_sigungu: addressSigungu.value,
+      gender: genderEl ? genderEl.value : null,
       age_group: ageGroup ? ageGroup.value : null,
       job_type: jobTypeVal,
       privacy_consent: privacyConsent.checked
