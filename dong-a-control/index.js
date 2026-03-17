@@ -636,7 +636,7 @@ const HTML_PAGE = `<!DOCTYPE html>
   }
 
   async function deleteAll() {
-    if (!confirm('전체 등록 데이터를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) return;
+    if (!confirm('전체 등록 데이터를 삭제하시겠습니까?\\n이 작업은 되돌릴 수 없습니다.')) return;
     if (!confirm('정말로 전체 삭제하시겠습니까?')) return;
     const res = await fetch('/registrations/all', { method: 'DELETE', headers: headers() });
     const data = await res.json();
