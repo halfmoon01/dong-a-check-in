@@ -223,6 +223,10 @@ const HTML_PAGE = `<!DOCTYPE html>
         <label>새 비밀번호</label>
         <input class="admin-input" type="password" id="newPassword" placeholder="새 비밀번호 입력">
       </div>
+      <div class="form-row">
+        <label>비밀번호 확인</label>
+        <input class="admin-input" type="password" id="confirmPassword" placeholder="새 비밀번호 재입력">
+      </div>
       <div class="btn-row">
         <button class="btn btn-secondary" onclick="changeAccount()" style="padding:10px 40px;">변경</button>
       </div>
@@ -252,6 +256,21 @@ const HTML_PAGE = `<!DOCTYPE html>
         <div>
           <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:8px;">성별</div>
           <div class="chart-box"><canvas id="chartGender"></canvas></div>
+        </div>
+      </div>
+      <div style="font-size:14px;font-weight:700;color:#333;margin:16px 0 12px;">크로스 분석</div>
+      <div class="chart-grid">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:8px;">직업군 × 성별</div>
+          <div class="chart-box" style="height:220px;"><canvas id="chartJobGender"></canvas></div>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:8px;">연령대 × 직업군</div>
+          <div class="chart-box" style="height:220px;"><canvas id="chartAgeJob"></canvas></div>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:8px;">지역 × 연령대</div>
+          <div class="chart-box" style="height:220px;"><canvas id="chartRegionAge"></canvas></div>
         </div>
       </div>
     </div>
@@ -446,7 +465,9 @@ const HTML_PAGE = `<!DOCTYPE html>
   async function changeAccount() {
     const newId = document.getElementById('newAdminId').value.trim();
     const newPw = document.getElementById('newPassword').value;
+    const confirmPw = document.getElementById('confirmPassword').value;
     if (!newId && !newPw) { alert('아이디 또는 비밀번호를 입력해주세요.'); return; }
+    if (newPw && newPw !== confirmPw) { alert('비밀번호가 일치하지 않습니다.'); return; }
 
     const [currentId, currentPw] = atob(authToken).split(':');
     if (newId) {
@@ -521,6 +542,66 @@ const HTML_PAGE = `<!DOCTYPE html>
     makeChart('chartRegion', 'bar', regionSorted.map(e=>e[0]), regionSorted.map(e=>e[1]));
     makeChart('chartJob', 'doughnut', Object.keys(jobCounts), Object.values(jobCounts));
     makeChart('chartGender', 'doughnut', Object.keys(genderCounts), Object.values(genderCounts));
+
+    function makeStackedChart(id, labels, categoryKeys, countMap, colors) {
+      if (chartInstances[id]) chartInstances[id].destroy();
+      const ctx = document.getElementById(id);
+      if (!ctx) return;
+      const datasets = categoryKeys.map((cat, i) => ({
+        label: cat,
+        data: labels.map(lbl => (countMap[lbl] && countMap[lbl][cat]) || 0),
+        backgroundColor: colors[i % colors.length]
+      }));
+      chartInstances[id] = new Chart(ctx, {
+        type: 'bar',
+        data: { labels, datasets },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { position: 'right', labels: { font: { size: 10 }, boxWidth: 10 } } },
+          scales: {
+            x: { stacked: true, ticks: { font: { size: 10 } } },
+            y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1 } }
+          }
+        }
+      });
+    }
+
+    // 크로스1: 직업군 × 성별
+    const jobLabels = Object.keys(jobCounts);
+    const genderKeys = ['남성', '여성', '미입력'];
+    const jobGenderMap = {};
+    rows.forEach(r => {
+      const job = r.job_type || '미입력';
+      const gen = r.gender || '미입력';
+      if (!jobGenderMap[job]) jobGenderMap[job] = {};
+      jobGenderMap[job][gen] = (jobGenderMap[job][gen] || 0) + 1;
+    });
+    makeStackedChart('chartJobGender', jobLabels, genderKeys, jobGenderMap, ['#3182ce','#e53e3e','#a0aec0']);
+
+    // 크로스2: 연령대 × 직업군
+    const ageOrder = ['10대','20대','30대','40대','50대','60대 이상','미입력'];
+    const ageLabels = ageOrder.filter(a => ageCounts[a] || rows.some(r => (r.age_group||'미입력')===a));
+    const jobKeys = Object.keys(jobCounts);
+    const ageJobMap = {};
+    rows.forEach(r => {
+      const age = r.age_group || '미입력';
+      const job = r.job_type || '미입력';
+      if (!ageJobMap[age]) ageJobMap[age] = {};
+      ageJobMap[age][job] = (ageJobMap[age][job] || 0) + 1;
+    });
+    makeStackedChart('chartAgeJob', ageLabels, jobKeys, ageJobMap, COLORS);
+
+    // 크로스3: 지역 × 연령대
+    const regionLabels = regionSorted.map(e => e[0]);
+    const ageOrderFiltered = ageOrder.filter(a => rows.some(r => (r.age_group||'미입력')===a));
+    const regionAgeMap = {};
+    rows.forEach(r => {
+      const region = r.address_sido || '미입력';
+      const age = r.age_group || '미입력';
+      if (!regionAgeMap[region]) regionAgeMap[region] = {};
+      regionAgeMap[region][age] = (regionAgeMap[region][age] || 0) + 1;
+    });
+    makeStackedChart('chartRegionAge', regionLabels, ageOrderFiltered, regionAgeMap, COLORS);
   }
 
   async function loadRegistrations() {
