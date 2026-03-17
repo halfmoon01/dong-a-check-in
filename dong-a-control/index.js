@@ -310,15 +310,12 @@ const HTML_PAGE = `<!DOCTYPE html>
         localStorage.setItem('admin_token', authToken);
         showAdmin();
       } else if (res.status === 401) {
-        errEl.textContent = '아이디 또는 비밀번호가 틀렸습니다.';
-        errEl.style.display = 'block';
+        alert('아이디 또는 비밀번호가 틀렸습니다.');
       } else {
-        errEl.textContent = '서버 오류가 발생했습니다. (DB 연결 확인 필요)';
-        errEl.style.display = 'block';
+        alert('서버 오류 ' + res.status + ': ' + (data.error || '알 수 없는 오류'));
       }
-    } catch {
-      errEl.textContent = '네트워크 오류가 발생했습니다.';
-      errEl.style.display = 'block';
+    } catch (e) {
+      alert('네트워크 오류: ' + e.message);
     }
   }
 
