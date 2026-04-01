@@ -196,6 +196,7 @@ const HTML_PAGE = `<!DOCTYPE html>
         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
           <input type="file" id="logoFile" accept="image/*" style="flex:1; min-width:0; padding:8px; border:1px solid #ddd; border-radius:6px; font-size:14px;">
           <button class="btn btn-primary" onclick="uploadLogo()" style="white-space:nowrap; padding:10px 28px;">저장</button>
+          <button class="btn btn-danger" id="deleteLogoBtn" onclick="deleteLogo()" style="white-space:nowrap; padding:10px 28px; display:none;">삭제</button>
           <img class="current-logo" id="currentLogo" style="display:none;">
         </div>
       </div>
@@ -363,6 +364,10 @@ const HTML_PAGE = `<!DOCTYPE html>
       if (settings.exhibition_logo) {
         document.getElementById('currentLogo').src = settings.exhibition_logo;
         document.getElementById('currentLogo').style.display = 'block';
+        document.getElementById('deleteLogoBtn').style.display = 'inline-block';
+      } else {
+        document.getElementById('currentLogo').style.display = 'none';
+        document.getElementById('deleteLogoBtn').style.display = 'none';
       }
 
       loadRegistrations();
@@ -460,6 +465,21 @@ const HTML_PAGE = `<!DOCTYPE html>
       }
     };
     reader.readAsDataURL(file);
+  }
+
+  async function deleteLogo() {
+    if (!confirm('로고를 삭제하시겠습니까?')) return;
+    const res = await fetch('/settings', {
+      method: 'POST', headers: headers(),
+      body: JSON.stringify({ key: 'exhibition_logo', value: '' })
+    });
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById('currentLogo').style.display = 'none';
+      document.getElementById('deleteLogoBtn').style.display = 'none';
+      document.getElementById('logoFile').value = '';
+      showMsg('settingsMsg', '로고가 삭제되었습니다.');
+    }
   }
 
   async function changeAccount() {

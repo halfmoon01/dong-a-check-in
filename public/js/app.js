@@ -429,7 +429,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (settings.exhibition_logo) {
         var logoImg = document.getElementById('exhibitionLogo');
         logoImg.src = settings.exhibition_logo;
-        logoImg.style.display = 'block';
+        document.getElementById('logoArea').style.display = 'block';
       }
     })
     .catch(function(err) {
