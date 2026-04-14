@@ -431,6 +431,19 @@ document.addEventListener('DOMContentLoaded', function() {
         logoImg.src = settings.exhibition_logo;
         document.getElementById('logoArea').style.display = 'block';
       }
+
+      var msg1El = document.getElementById('completionMsg1');
+      var msg2El = document.getElementById('completionMsg2');
+      if (settings.completion_msg1) {
+        msg1El.textContent = settings.completion_msg1;
+        if (settings.completion_msg1_color) msg1El.style.color = settings.completion_msg1_color;
+        if (settings.completion_msg1_size) msg1El.style.fontSize = settings.completion_msg1_size + 'px';
+      }
+      if (settings.completion_msg2) {
+        msg2El.textContent = settings.completion_msg2;
+        if (settings.completion_msg2_color) msg2El.style.color = settings.completion_msg2_color;
+        if (settings.completion_msg2_size) msg2El.style.fontSize = settings.completion_msg2_size + 'px';
+      }
     })
     .catch(function(err) {
       console.error('설정 로드 실패:', err);
@@ -444,6 +457,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 3초마다 설정 자동 갱신 (관리자 변경 실시간 반영)
   setInterval(loadSettings, 3000);
+
+  // 모바일에서 앱 나갔다가 돌아올 때 페이지 복구
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') {
+      loadSettings();
+      // 완료 페이지도 폼도 안 보이면 폼 다시 표시
+      var comp = document.getElementById('completionPage');
+      var closed = document.getElementById('closedPage');
+      if (comp.style.display !== 'block' && closed.style.display !== 'block' && form.style.display !== 'block') {
+        form.style.display = 'block';
+      }
+    }
+  });
+
+  // pageshow: 뒤로가기/앞으로가기 캐시(bfcache)에서 복구될 때
+  window.addEventListener('pageshow', function(event) {
+    if (event.persisted) {
+      loadSettings();
+      var comp = document.getElementById('completionPage');
+      var closed = document.getElementById('closedPage');
+      if (comp.style.display !== 'block' && closed.style.display !== 'block' && form.style.display !== 'block') {
+        form.style.display = 'block';
+      }
+    }
+  });
 
   console.log('동아전람 현장등록 시스템 로드 완료');
 });

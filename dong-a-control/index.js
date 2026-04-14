@@ -203,6 +203,43 @@ const HTML_PAGE = `<!DOCTYPE html>
       <div class="msg msg-success" id="settingsMsg"></div>
     </div>
 
+    <!-- Completion Messages -->
+    <div class="card">
+      <h3>등록 완료 안내 문구</h3>
+      <div class="form-row">
+        <label>안내 문구 1 (큰 글씨)</label>
+        <input class="admin-input" type="text" id="completionMsg1" placeholder="예: 입장권을 결제 후 입장해주세요 (1인당 1만원)">
+      </div>
+      <div style="display:flex; gap:8px; margin-top:4px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:100px;">
+          <label style="font-size:12px; color:#888;">글자 색상</label>
+          <input type="color" id="completionMsg1Color" value="#333333" style="width:100%; height:36px; border:1px solid #ddd; border-radius:6px; cursor:pointer;">
+        </div>
+        <div style="flex:1; min-width:100px;">
+          <label style="font-size:12px; color:#888;">글자 크기 (px)</label>
+          <input class="admin-input" type="number" id="completionMsg1Size" value="17" min="10" max="40" style="margin:0;">
+        </div>
+      </div>
+      <div class="form-row" style="margin-top:12px;">
+        <label>안내 문구 2 (작은 글씨)</label>
+        <input class="admin-input" type="text" id="completionMsg2" placeholder="예: *초청장을 소지하신분은 초청장을 제시해주세요">
+      </div>
+      <div style="display:flex; gap:8px; margin-top:4px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:100px;">
+          <label style="font-size:12px; color:#888;">글자 색상</label>
+          <input type="color" id="completionMsg2Color" value="#888888" style="width:100%; height:36px; border:1px solid #ddd; border-radius:6px; cursor:pointer;">
+        </div>
+        <div style="flex:1; min-width:100px;">
+          <label style="font-size:12px; color:#888;">글자 크기 (px)</label>
+          <input class="admin-input" type="number" id="completionMsg2Size" value="13" min="10" max="40" style="margin:0;">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="saveCompletionMsg()" style="padding:10px 40px;">저장</button>
+      </div>
+      <div class="msg msg-success" id="completionMsgMsg"></div>
+    </div>
+
     <!-- Privacy Text -->
     <div class="card">
       <h3>개인정보 수집·이용 동의 문구</h3>
@@ -370,6 +407,13 @@ const HTML_PAGE = `<!DOCTYPE html>
         document.getElementById('deleteLogoBtn').style.display = 'none';
       }
 
+      document.getElementById('completionMsg1').value = settings.completion_msg1 || '';
+      document.getElementById('completionMsg1Color').value = settings.completion_msg1_color || '#333333';
+      document.getElementById('completionMsg1Size').value = settings.completion_msg1_size || '17';
+      document.getElementById('completionMsg2').value = settings.completion_msg2 || '';
+      document.getElementById('completionMsg2Color').value = settings.completion_msg2_color || '#888888';
+      document.getElementById('completionMsg2Size').value = settings.completion_msg2_size || '13';
+
       loadRegistrations();
       loadAppStatus();
     } catch(e) {
@@ -427,6 +471,24 @@ const HTML_PAGE = `<!DOCTYPE html>
     });
     toggle.classList.toggle('on');
     document.getElementById('serverStatus').textContent = newValue === '1' ? '등록 열림' : '등록 닫힘';
+  }
+
+  async function saveCompletionMsg() {
+    const fields = [
+      { key: 'completion_msg1', value: document.getElementById('completionMsg1').value },
+      { key: 'completion_msg1_color', value: document.getElementById('completionMsg1Color').value },
+      { key: 'completion_msg1_size', value: document.getElementById('completionMsg1Size').value },
+      { key: 'completion_msg2', value: document.getElementById('completionMsg2').value },
+      { key: 'completion_msg2_color', value: document.getElementById('completionMsg2Color').value },
+      { key: 'completion_msg2_size', value: document.getElementById('completionMsg2Size').value },
+    ];
+    for (var i = 0; i < fields.length; i++) {
+      await fetch('/settings', {
+        method: 'POST', headers: headers(),
+        body: JSON.stringify(fields[i])
+      });
+    }
+    showMsg('completionMsgMsg', '저장되었습니다.');
   }
 
   async function savePrivacy() {
@@ -834,7 +896,7 @@ app.http('postSettings', {
   handler: async (request) => {
     if (!await verifyAdmin(request)) return { status: 401, jsonBody: { error: '인증 실패' } };
     const { key, value } = await request.json();
-    const allowed = ['server_open', 'privacy_text', 'exhibition_name', 'admin_id', 'admin_pw', 'exhibition_logo'];
+    const allowed = ['server_open', 'privacy_text', 'exhibition_name', 'admin_id', 'admin_pw', 'exhibition_logo', 'completion_msg1', 'completion_msg1_color', 'completion_msg1_size', 'completion_msg2', 'completion_msg2_color', 'completion_msg2_size'];
     if (!allowed.includes(key)) return { status: 400, jsonBody: { error: '허용되지 않는 설정입니다.' } };
     try {
       const p = await getPool();

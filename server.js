@@ -61,7 +61,13 @@ async function initDb() {
     ['privacy_text', '개인정보 수집·이용 동의\n\n1. 수집항목: 성명, 연락처, 이메일, 소속(회사), 주소, 연령대, 직업군\n2. 수집목적: 박람회 현장등록 및 관리, 박람회 관련 정보 제공\n3. 보유기간: 박람회 종료 후 1년\n\n위 개인정보 수집·이용에 동의하십니까?'],
     ['admin_id', 'admin'],
     ['admin_pw', 'donga2026!'],
-    ['exhibition_name', '동아전람 박람회']
+    ['exhibition_name', '동아전람 박람회'],
+    ['completion_msg1', '입장권을 결제 후 입장해주세요 (1인당 1만원)'],
+    ['completion_msg1_color', '#333333'],
+    ['completion_msg1_size', '17'],
+    ['completion_msg2', '*모바일 초청장/카톡초청장/종이초청장을 소지하신분은 초청장을 제시해주세요'],
+    ['completion_msg2_color', '#888888'],
+    ['completion_msg2_size', '13']
   ];
 
   for (const [key, value] of defaults) {
