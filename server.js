@@ -179,7 +179,7 @@ app.post('/api/register', checkServerOpen, async (req, res) => {
         VALUES (@name, @phone, @sms_consent, @email, @email_consent, @company, @address_sido, @address_sigungu, @gender, @age_group, @job_type, @privacy_consent, @reg_number)
       `);
 
-    res.json({ success: true, reg_number: regNumber, name });
+    res.json({ success: true, reg_number: regNumber, name, job_type });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: '등록 중 오류가 발생했습니다.' });

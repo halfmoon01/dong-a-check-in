@@ -387,6 +387,7 @@ document.addEventListener('DOMContentLoaded', function() {
           document.getElementById('qrImage').src = qrData.qr;
           document.getElementById('regNumberDisplay').textContent = result.data.reg_number;
           document.getElementById('regNameDisplay').textContent = result.data.name;
+          document.getElementById('regJobDisplay').textContent = result.data.job_type || '';
           window.scrollTo(0, 0);
         });
     })
