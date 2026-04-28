@@ -189,12 +189,29 @@ app.post('/api/register', checkServerOpen, async (req, res) => {
 // Generate QR code
 app.get('/api/qrcode/:regNumber', async (req, res) => {
   try {
-    const qrData = await QRCode.toDataURL(req.params.regNumber, {
+    const result = await pool.request()
+      .input('regNumber', sql.NVarChar, req.params.regNumber)
+      .query("SELECT reg_number, name, job_type FROM registrations WHERE reg_number = @regNumber");
+
+    let payload;
+    if (result.recordset.length > 0) {
+      const r = result.recordset[0];
+      payload = JSON.stringify({
+        reg: r.reg_number,
+        name: r.name,
+        job: r.job_type
+      });
+    } else {
+      payload = req.params.regNumber;
+    }
+
+    const qrData = await QRCode.toDataURL(payload, {
       width: 250,
       margin: 2
     });
     res.json({ qr: qrData });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'QR 생성 실패' });
   }
 });

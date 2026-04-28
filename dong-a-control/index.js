@@ -234,6 +234,14 @@ const HTML_PAGE = `<!DOCTYPE html>
           <input class="admin-input" type="number" id="completionMsg2Size" value="13" min="10" max="40" style="margin:0;">
         </div>
       </div>
+      <div style="margin-top:16px; padding:16px; background:#f9f9f9; border:1px dashed #ddd; border-radius:8px;">
+        <div style="font-size:12px; color:#aaa; margin-bottom:8px;">미리보기</div>
+        <div style="text-align:center;">
+          <strong>현장등록이 완료되었습니다.</strong>
+          <div id="previewMsg1" style="margin-top:12px; font-size:17px; font-weight:600;"></div>
+          <div id="previewMsg2" style="margin-top:6px; font-size:13px; color:#888;"></div>
+        </div>
+      </div>
       <div class="btn-row">
         <button class="btn btn-primary" onclick="saveCompletionMsg()" style="padding:10px 40px;">저장</button>
       </div>
@@ -413,6 +421,7 @@ const HTML_PAGE = `<!DOCTYPE html>
       document.getElementById('completionMsg2').value = settings.completion_msg2 || '';
       document.getElementById('completionMsg2Color').value = settings.completion_msg2_color || '#888888';
       document.getElementById('completionMsg2Size').value = settings.completion_msg2_size || '13';
+      updateCompletionPreview();
 
       loadRegistrations();
       loadAppStatus();
@@ -472,6 +481,20 @@ const HTML_PAGE = `<!DOCTYPE html>
     toggle.classList.toggle('on');
     document.getElementById('serverStatus').textContent = newValue === '1' ? '등록 열림' : '등록 닫힘';
   }
+
+  function updateCompletionPreview() {
+    var p1 = document.getElementById('previewMsg1');
+    var p2 = document.getElementById('previewMsg2');
+    p1.textContent = document.getElementById('completionMsg1').value || '(문구 1 미입력)';
+    p1.style.color = document.getElementById('completionMsg1Color').value;
+    p1.style.fontSize = document.getElementById('completionMsg1Size').value + 'px';
+    p2.textContent = document.getElementById('completionMsg2').value || '(문구 2 미입력)';
+    p2.style.color = document.getElementById('completionMsg2Color').value;
+    p2.style.fontSize = document.getElementById('completionMsg2Size').value + 'px';
+  }
+  ['completionMsg1','completionMsg1Color','completionMsg1Size','completionMsg2','completionMsg2Color','completionMsg2Size'].forEach(function(id) {
+    document.getElementById(id).addEventListener('input', updateCompletionPreview);
+  });
 
   async function saveCompletionMsg() {
     const fields = [
