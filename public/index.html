@@ -55,8 +55,7 @@
       <!-- 휴대폰 번호 -->
       <div class="form-group" id="grpPhone">
         <span class="form-label" data-i18n="lblPhone">휴대폰 번호 <span class="required">*</span></span>
-        <!-- 한국어: 3칸 분할 -->
-        <div class="phone-row" id="phoneRowKo">
+        <div class="phone-row">
           <select class="form-select" id="phonePrefix" name="phonePrefix">
             <option value="010">010</option>
             <option value="011">011</option>
@@ -69,11 +68,6 @@
           <input type="tel" class="form-input" id="phoneMid" maxlength="4" placeholder="0000" inputmode="numeric">
           <span class="phone-dash">-</span>
           <input type="tel" class="form-input" id="phoneLast" maxlength="4" placeholder="0000" inputmode="numeric">
-        </div>
-        <!-- 영어: 국가번호 + 자유 입력 -->
-        <div id="phoneRowEn" style="display:none; gap:8px;">
-          <input type="text" class="form-input" id="phoneCountry" placeholder="+1" style="max-width:90px;" value="+1">
-          <input type="tel" class="form-input" id="phoneFree" placeholder="Phone number" inputmode="tel">
         </div>
         <div class="error-msg" id="errPhone">휴대폰 번호를 정확히 입력해주세요.</div>
         <div class="checkbox-row" style="margin-top:12px;">
@@ -123,28 +117,18 @@
         </div>
       </div>
 
-      <!-- 주소 (한국어) -->
+      <!-- 주소 -->
       <div class="form-group" id="grpAddress">
-        <span class="form-label">주소 <span class="required">*</span></span>
+        <span class="form-label" data-i18n="lblAddress">주소 <span class="required">*</span></span>
         <div class="address-row">
           <select class="form-select" id="addressSido" onchange="updateSigungu()">
-            <option value="">시/도 선택</option>
+            <option value="" data-i18n="optSido">시/도 선택</option>
           </select>
           <select class="form-select" id="addressSigungu">
-            <option value="">시/군/구 선택</option>
+            <option value="" data-i18n="optSigungu">시/군/구 선택</option>
           </select>
         </div>
         <div class="error-msg" id="errAddress">주소를 선택해주세요.</div>
-      </div>
-
-      <!-- 주소 (영어) -->
-      <div class="form-group" id="grpAddressEn" style="display:none;">
-        <span class="form-label">Address</span>
-        <input type="text" class="form-input" id="addressFreeEn" placeholder="City, Country">
-        <div class="checkbox-row" style="margin-top:8px;">
-          <input type="checkbox" id="noAddressEn" onchange="document.getElementById('addressFreeEn').disabled=this.checked; if(this.checked) document.getElementById('addressFreeEn').value='';">
-          <label for="noAddressEn">No address</label>
-        </div>
       </div>
 
       <!-- 성별 -->

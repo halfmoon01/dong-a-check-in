@@ -22,6 +22,9 @@ var I18N = {
     optJob1: '관련업계종사자', optJob2: '예비건축주', optJob3: '국내외 바이어',
     optJob4: '인테리어 수요자', optJob5: '일반관람객', optJob6: '기타 (직접 입력)',
     phJobEtc: '직업군을 입력해주세요',
+    lblAddress: '주소 <span class="required">*</span>',
+    optSido: '시/도 선택',
+    optSigungu: '시/군/구 선택',
     lblPrivacy: '개인정보 수집·이용 동의 <span class="required">*</span>',
     lblPrivacyConsent: '위 개인정보 수집·이용에 동의합니다. (필수)',
     btnSubmit: '현장 등록'
@@ -48,6 +51,9 @@ var I18N = {
     optJob1: 'Industry Professional', optJob2: 'Prospective Builder', optJob3: 'Buyer (Domestic/International)',
     optJob4: 'Interior Customer', optJob5: 'General Visitor', optJob6: 'Other (specify)',
     phJobEtc: 'Please specify',
+    lblAddress: 'Address <span class="required">*</span>',
+    optSido: 'Select Region',
+    optSigungu: 'Select District',
     lblPrivacy: 'Privacy Policy Agreement <span class="required">*</span>',
     lblPrivacyConsent: 'I agree to the collection and use of personal information. (Required)',
     btnSubmit: 'Register'
@@ -118,15 +124,7 @@ function switchLang(lang) {
     btnEn.style.background = '#e53e3e'; btnEn.style.color = '#fff';
     btnKo.style.background = '#fff'; btnKo.style.color = '#e53e3e';
   }
-  // 휴대폰 입력 방식 전환
-  var phRowKo = document.getElementById('phoneRowKo');
-  var phRowEn = document.getElementById('phoneRowEn');
-  phRowKo.style.display = lang === 'ko' ? '' : 'none';
-  phRowEn.style.display = lang === 'en' ? 'flex' : 'none';
-  // 영어 모드: 한국 주소 숨김 + 영어 주소 표시 + 이메일 없음 버튼 숨김
-  document.getElementById('grpAddress').style.display = lang === 'ko' ? 'block' : 'none';
-  var grpEn = document.getElementById('grpAddressEn');
-  if (grpEn) grpEn.style.display = lang === 'en' ? 'block' : 'none';
+  // 영어 모드: 이메일 없음 버튼 숨김
   document.getElementById('btnNoEmail').style.display = lang === 'ko' ? 'inline-block' : 'none';
   // 영어 모드면 이메일 입력 강제로 보이게
   if (lang === 'en') {
@@ -411,31 +409,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 휴대폰
-    if (currentLang === 'ko') {
-      var midVal = phoneMid.value.trim();
-      var lastVal = phoneLast.value.trim();
-      if (!midVal || !lastVal) {
-        showError('grpPhone', 'errPhone', T.phoneEmpty);
-        if (!midVal) setInputError(phoneMid);
-        if (!lastVal) setInputError(phoneLast);
-        if (!firstEl) firstEl = document.getElementById('grpPhone');
-        valid = false;
-      } else if (midVal.length < 3 || lastVal.length < 4) {
-        showError('grpPhone', 'errPhone', T.phoneInvalid);
-        if (midVal.length < 3) setInputError(phoneMid);
-        if (lastVal.length < 4) setInputError(phoneLast);
-        if (!firstEl) firstEl = document.getElementById('grpPhone');
-        valid = false;
-      }
-    } else {
-      var phoneFreeEl = document.getElementById('phoneFree');
-      var freeVal = phoneFreeEl.value.replace(/[^0-9]/g, '');
-      if (freeVal.length < 7) {
-        showError('grpPhone', 'errPhone', T.phoneInvalid);
-        setInputError(phoneFreeEl);
-        if (!firstEl) firstEl = document.getElementById('grpPhone');
-        valid = false;
-      }
+    var midVal = phoneMid.value.trim();
+    var lastVal = phoneLast.value.trim();
+    if (!midVal || !lastVal) {
+      showError('grpPhone', 'errPhone', T.phoneEmpty);
+      if (!midVal) setInputError(phoneMid);
+      if (!lastVal) setInputError(phoneLast);
+      if (!firstEl) firstEl = document.getElementById('grpPhone');
+      valid = false;
+    } else if (midVal.length < 3 || lastVal.length < 4) {
+      showError('grpPhone', 'errPhone', T.phoneInvalid);
+      if (midVal.length < 3) setInputError(phoneMid);
+      if (lastVal.length < 4) setInputError(phoneLast);
+      if (!firstEl) firstEl = document.getElementById('grpPhone');
+      valid = false;
     }
 
     // SMS/카카오톡 수신동의 (필수)
@@ -471,19 +458,17 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 
-    // 주소 (한국어만)
-    if (currentLang === 'ko') {
-      if (!addressSido.value) {
-        showError('grpAddress', 'errAddress', T.sido);
-        setInputError(addressSido);
-        if (!firstEl) firstEl = document.getElementById('grpAddress');
-        valid = false;
-      } else if (!addressSigungu.value) {
-        showError('grpAddress', 'errAddress', T.sigungu);
-        setInputError(addressSigungu);
-        if (!firstEl) firstEl = document.getElementById('grpAddress');
-        valid = false;
-      }
+    // 주소
+    if (!addressSido.value) {
+      showError('grpAddress', 'errAddress', T.sido);
+      setInputError(addressSido);
+      if (!firstEl) firstEl = document.getElementById('grpAddress');
+      valid = false;
+    } else if (!addressSigungu.value) {
+      showError('grpAddress', 'errAddress', T.sigungu);
+      setInputError(addressSigungu);
+      if (!firstEl) firstEl = document.getElementById('grpAddress');
+      valid = false;
     }
 
     // 성별
@@ -546,14 +531,7 @@ document.addEventListener('DOMContentLoaded', function() {
     btnSubmit.textContent = ERR_I18N[currentLang].submitting;
 
     var name = nameInput.value.trim();
-    var phone;
-    if (currentLang === 'ko') {
-      phone = phonePrefix.value + '-' + phoneMid.value.trim() + '-' + phoneLast.value.trim();
-    } else {
-      var cc = document.getElementById('phoneCountry').value.trim();
-      var pf = document.getElementById('phoneFree').value.trim();
-      phone = cc + ' ' + pf;
-    }
+    var phone = phonePrefix.value + '-' + phoneMid.value.trim() + '-' + phoneLast.value.trim();
 
     var email = '';
     var eId = emailId.value.trim();
@@ -574,12 +552,8 @@ document.addEventListener('DOMContentLoaded', function() {
       email: email || null,
       email_consent: emailConsent.checked,
       company: company.value.trim() || null,
-      address_sido: currentLang === 'ko'
-        ? addressSido.value
-        : (document.getElementById('noAddressEn') && document.getElementById('noAddressEn').checked
-            ? null
-            : (document.getElementById('addressFreeEn').value.trim() || null)),
-      address_sigungu: currentLang === 'ko' ? addressSigungu.value : null,
+      address_sido: addressSido.value,
+      address_sigungu: addressSigungu.value,
       gender: genderEl ? genderEl.value : null,
       age_group: ageGroup ? ageGroup.value : null,
       job_type: jobTypeVal,
