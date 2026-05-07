@@ -124,7 +124,11 @@ function switchLang(lang) {
     btnEn.style.background = '#e53e3e'; btnEn.style.color = '#fff';
     btnKo.style.background = '#fff'; btnKo.style.color = '#e53e3e';
   }
-  // 영어 모드: 이메일 없음 버튼 숨김
+  // 휴대폰 입력 방식 전환
+  document.getElementById('phoneRowKo').style.display = lang === 'ko' ? '' : 'none';
+  document.getElementById('phoneRowEn').style.display = lang === 'en' ? 'flex' : 'none';
+  // 영어 모드: 한국 주소 숨김 + 이메일 없음 버튼 숨김
+  document.getElementById('grpAddress').style.display = lang === 'ko' ? 'block' : 'none';
   document.getElementById('btnNoEmail').style.display = lang === 'ko' ? 'inline-block' : 'none';
   // 영어 모드면 이메일 입력 강제로 보이게
   if (lang === 'en') {
@@ -409,20 +413,31 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 휴대폰
-    var midVal = phoneMid.value.trim();
-    var lastVal = phoneLast.value.trim();
-    if (!midVal || !lastVal) {
-      showError('grpPhone', 'errPhone', T.phoneEmpty);
-      if (!midVal) setInputError(phoneMid);
-      if (!lastVal) setInputError(phoneLast);
-      if (!firstEl) firstEl = document.getElementById('grpPhone');
-      valid = false;
-    } else if (midVal.length < 3 || lastVal.length < 4) {
-      showError('grpPhone', 'errPhone', T.phoneInvalid);
-      if (midVal.length < 3) setInputError(phoneMid);
-      if (lastVal.length < 4) setInputError(phoneLast);
-      if (!firstEl) firstEl = document.getElementById('grpPhone');
-      valid = false;
+    if (currentLang === 'ko') {
+      var midVal = phoneMid.value.trim();
+      var lastVal = phoneLast.value.trim();
+      if (!midVal || !lastVal) {
+        showError('grpPhone', 'errPhone', T.phoneEmpty);
+        if (!midVal) setInputError(phoneMid);
+        if (!lastVal) setInputError(phoneLast);
+        if (!firstEl) firstEl = document.getElementById('grpPhone');
+        valid = false;
+      } else if (midVal.length < 3 || lastVal.length < 4) {
+        showError('grpPhone', 'errPhone', T.phoneInvalid);
+        if (midVal.length < 3) setInputError(phoneMid);
+        if (lastVal.length < 4) setInputError(phoneLast);
+        if (!firstEl) firstEl = document.getElementById('grpPhone');
+        valid = false;
+      }
+    } else {
+      var phoneFreeEl = document.getElementById('phoneFree');
+      var freeVal = phoneFreeEl.value.replace(/[^0-9]/g, '');
+      if (freeVal.length < 7) {
+        showError('grpPhone', 'errPhone', T.phoneInvalid);
+        setInputError(phoneFreeEl);
+        if (!firstEl) firstEl = document.getElementById('grpPhone');
+        valid = false;
+      }
     }
 
     // SMS/카카오톡 수신동의 (필수)
@@ -458,17 +473,19 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 
-    // 주소
-    if (!addressSido.value) {
-      showError('grpAddress', 'errAddress', T.sido);
-      setInputError(addressSido);
-      if (!firstEl) firstEl = document.getElementById('grpAddress');
-      valid = false;
-    } else if (!addressSigungu.value) {
-      showError('grpAddress', 'errAddress', T.sigungu);
-      setInputError(addressSigungu);
-      if (!firstEl) firstEl = document.getElementById('grpAddress');
-      valid = false;
+    // 주소 (한국어만)
+    if (currentLang === 'ko') {
+      if (!addressSido.value) {
+        showError('grpAddress', 'errAddress', T.sido);
+        setInputError(addressSido);
+        if (!firstEl) firstEl = document.getElementById('grpAddress');
+        valid = false;
+      } else if (!addressSigungu.value) {
+        showError('grpAddress', 'errAddress', T.sigungu);
+        setInputError(addressSigungu);
+        if (!firstEl) firstEl = document.getElementById('grpAddress');
+        valid = false;
+      }
     }
 
     // 성별
@@ -531,7 +548,14 @@ document.addEventListener('DOMContentLoaded', function() {
     btnSubmit.textContent = ERR_I18N[currentLang].submitting;
 
     var name = nameInput.value.trim();
-    var phone = phonePrefix.value + '-' + phoneMid.value.trim() + '-' + phoneLast.value.trim();
+    var phone;
+    if (currentLang === 'ko') {
+      phone = phonePrefix.value + '-' + phoneMid.value.trim() + '-' + phoneLast.value.trim();
+    } else {
+      var cc = document.getElementById('phoneCountry').value.trim();
+      var pf = document.getElementById('phoneFree').value.trim();
+      phone = cc + ' ' + pf;
+    }
 
     var email = '';
     var eId = emailId.value.trim();
@@ -552,8 +576,8 @@ document.addEventListener('DOMContentLoaded', function() {
       email: email || null,
       email_consent: emailConsent.checked,
       company: company.value.trim() || null,
-      address_sido: addressSido.value,
-      address_sigungu: addressSigungu.value,
+      address_sido: currentLang === 'ko' ? addressSido.value : null,
+      address_sigungu: currentLang === 'ko' ? addressSigungu.value : null,
       gender: genderEl ? genderEl.value : null,
       age_group: ageGroup ? ageGroup.value : null,
       job_type: jobTypeVal,

@@ -146,8 +146,8 @@ app.post('/api/register', checkServerOpen, async (req, res) => {
     if (!phone || phone.replace(/[^0-9]/g, '').length < 7) errors.push(isEn ? 'Please enter a valid phone number.' : '휴대폰 번호를 정확히 입력해주세요.');
     if (isEn && (!email || !email.trim())) errors.push('Email is required.');
     if (email && (email.match(/@/g) || []).length !== 1) errors.push(isEn ? 'Invalid email format.' : '이메일 형식이 올바르지 않습니다.');
-    if (!address_sido) errors.push(isEn ? 'Please select a region.' : '시/도를 선택해주세요.');
-    if (!address_sigungu) errors.push(isEn ? 'Please select a district.' : '시/군/구를 선택해주세요.');
+    if (!isEn && !address_sido) errors.push('시/도를 선택해주세요.');
+    if (!isEn && !address_sigungu) errors.push('시/군/구를 선택해주세요.');
     if (!sms_consent) errors.push(isEn ? 'Please agree to SMS notifications.' : '문자(SMS), 카카오톡 수신 동의에 체크해주세요.');
     if (email && !email_consent) errors.push(isEn ? 'Please agree to email notifications.' : '이메일 수신 동의에 체크해주세요.');
     if (!age_group) errors.push(isEn ? 'Please select age group.' : '연령대를 선택해주세요.');
