@@ -48,6 +48,11 @@ async function initDb() {
   `);
 
   await pool.request().query(`
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('registrations') AND name = 'language')
+    ALTER TABLE registrations ADD language NVARCHAR(10)
+  `);
+
+  await pool.request().query(`
     IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='settings' AND xtype='U')
     CREATE TABLE settings (
       [key] NVARCHAR(100) PRIMARY KEY,
@@ -131,19 +136,23 @@ app.post('/api/register', checkServerOpen, async (req, res) => {
     const {
       name, phone, sms_consent, email, email_consent,
       company, address_sido, address_sigungu,
-      gender, age_group, job_type, privacy_consent
+      gender, age_group, job_type, privacy_consent, language
     } = req.body;
 
+    const isEn = language === 'en';
     const errors = [];
-    if (!name || !name.trim()) errors.push('성명을 입력해주세요.');
-    if (!phone || phone.replace(/[^0-9]/g, '').length < 10) errors.push('휴대폰 번호를 정확히 입력해주세요.');
-    if (!address_sido) errors.push('시/도를 선택해주세요.');
-    if (!address_sigungu) errors.push('시/군/구를 선택해주세요.');
-    if (!sms_consent) errors.push('문자(SMS), 카카오톡 수신 동의에 체크해주세요.');
-    if (email && !email_consent) errors.push('이메일 수신 동의에 체크해주세요.');
-    if (!age_group) errors.push('연령대를 선택해주세요.');
-    if (!job_type) errors.push('직업군을 선택해주세요.');
-    if (!privacy_consent) errors.push('개인정보 수집·이용에 동의해주세요.');
+    if (!name || !name.trim()) errors.push(isEn ? 'Please enter your name.' : '성명을 입력해주세요.');
+    else if (/[0-9]/.test(name)) errors.push(isEn ? 'Name cannot contain numbers.' : '성명에 숫자를 입력할 수 없습니다.');
+    if (!phone || phone.replace(/[^0-9]/g, '').length < 7) errors.push(isEn ? 'Please enter a valid phone number.' : '휴대폰 번호를 정확히 입력해주세요.');
+    if (isEn && (!email || !email.trim())) errors.push('Email is required.');
+    if (email && (email.match(/@/g) || []).length !== 1) errors.push(isEn ? 'Invalid email format.' : '이메일 형식이 올바르지 않습니다.');
+    if (!isEn && !address_sido) errors.push('시/도를 선택해주세요.');
+    if (!isEn && !address_sigungu) errors.push('시/군/구를 선택해주세요.');
+    if (!sms_consent) errors.push(isEn ? 'Please agree to SMS notifications.' : '문자(SMS), 카카오톡 수신 동의에 체크해주세요.');
+    if (email && !email_consent) errors.push(isEn ? 'Please agree to email notifications.' : '이메일 수신 동의에 체크해주세요.');
+    if (!age_group) errors.push(isEn ? 'Please select age group.' : '연령대를 선택해주세요.');
+    if (!job_type) errors.push(isEn ? 'Please select job type.' : '직업군을 선택해주세요.');
+    if (!privacy_consent) errors.push(isEn ? 'Please agree to privacy policy.' : '개인정보 수집·이용에 동의해주세요.');
 
     if (errors.length > 0) {
       return res.status(400).json({ error: errors[0], errors });
@@ -174,9 +183,10 @@ app.post('/api/register', checkServerOpen, async (req, res) => {
       .input('job_type', sql.NVarChar, job_type || null)
       .input('privacy_consent', sql.Int, privacy_consent ? 1 : 0)
       .input('reg_number', sql.NVarChar, regNumber)
+      .input('language', sql.NVarChar, language || 'ko')
       .query(`
-        INSERT INTO registrations (name, phone, sms_consent, email, email_consent, company, address_sido, address_sigungu, gender, age_group, job_type, privacy_consent, reg_number)
-        VALUES (@name, @phone, @sms_consent, @email, @email_consent, @company, @address_sido, @address_sigungu, @gender, @age_group, @job_type, @privacy_consent, @reg_number)
+        INSERT INTO registrations (name, phone, sms_consent, email, email_consent, company, address_sido, address_sigungu, gender, age_group, job_type, privacy_consent, reg_number, language)
+        VALUES (@name, @phone, @sms_consent, @email, @email_consent, @company, @address_sido, @address_sigungu, @gender, @age_group, @job_type, @privacy_consent, @reg_number, @language)
       `);
 
     res.json({ success: true, reg_number: regNumber, name, job_type });

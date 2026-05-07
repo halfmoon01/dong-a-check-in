@@ -325,13 +325,16 @@ const HTML_PAGE = `<!DOCTYPE html>
     <div class="card">
       <h3>등록 목록</h3>
       <div class="btn-row" style="margin-bottom:12px;">
-        <button class="btn btn-success" onclick="exportExcel()">엑셀 다운로드</button>
+        <button class="btn btn-success" onclick="exportExcel('all')">엑셀 다운로드 (전체)</button>
+        <button class="btn btn-success" style="background:#16a34a;" onclick="exportExcel('ko')">한국인만</button>
+        <button class="btn btn-success" style="background:#0891b2;" onclick="exportExcel('en')">외국인만</button>
         <button class="btn btn-secondary" onclick="loadRegistrations()">새로고침</button>
         <button class="btn" style="background:#94a3b8;color:#fff;font-size:12px;padding:8px 14px;" onclick="seedData()">목데이터 생성</button>
         <button class="btn btn-danger" style="font-size:12px;padding:8px 14px;" onclick="deleteAll()">전체 삭제</button>
       </div>
-      <div style="margin-bottom:12px;">
-        <input type="text" class="admin-input" id="searchInput" placeholder="이름, 연락처, 등록번호, 소속으로 검색..." oninput="filterTable()" style="max-width:360px;">
+      <div style="display:flex; gap:12px; align-items:center; margin-bottom:12px; flex-wrap:wrap;">
+        <input type="text" class="admin-input" id="searchInput" placeholder="이름, 연락처, 등록번호, 소속으로 검색..." oninput="filterTable()" style="max-width:360px; margin:0;">
+        <div id="regCountInfo" style="font-size:14px; color:#555; font-weight:600;"></div>
       </div>
       <div class="table-wrap">
         <table>
@@ -345,6 +348,7 @@ const HTML_PAGE = `<!DOCTYPE html>
           <tbody id="regTableBody"></tbody>
         </table>
       </div>
+      <div id="paginationWrap" style="display:flex; justify-content:center; gap:6px; margin-top:16px; flex-wrap:wrap;"></div>
     </div>
   </div>
 </div>
@@ -709,28 +713,81 @@ const HTML_PAGE = `<!DOCTYPE html>
     makeStackedChart('chartRegionAge', regionLabels, ageOrderFiltered, regionAgeMap, COLORS);
   }
 
+  var currentPage = 1;
+  var PAGE_SIZE = 50;
+  var filteredRows = [];
+
   async function loadRegistrations() {
     const res = await fetch('/registrations', { headers: headers() });
     allRows = await res.json();
+    // 등록순 ASC로 정렬해서 seq 부여 (1번 = 첫 등록자)
+    allRows.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+    allRows.forEach((r, i) => { r._seq = i + 1; });
+    // 화면에는 최신순(DESC) 표시
+    allRows.reverse();
     document.getElementById('statTotal').textContent = allRows.length;
     const today = new Date().toISOString().slice(0, 10);
     document.getElementById('statToday').textContent =
       allRows.filter(r => r.created_at && r.created_at.toString().startsWith(today)).length;
-    renderTable(allRows);
+    filteredRows = allRows;
+    currentPage = 1;
+    renderPage();
     renderCharts(allRows);
   }
 
   function filterTable() {
     const q = document.getElementById('searchInput').value.trim().toLowerCase();
-    if (!q) { renderTable(allRows); return; }
-    const filtered = allRows.filter(r =>
-      (r.name||'').toLowerCase().includes(q) ||
-      (r.phone||'').includes(q) ||
-      (r.reg_number||'').toLowerCase().includes(q) ||
-      (r.company||'').toLowerCase().includes(q) ||
-      (r.email||'').toLowerCase().includes(q)
-    );
-    renderTable(filtered);
+    if (!q) { filteredRows = allRows; }
+    else {
+      filteredRows = allRows.filter(r =>
+        (r.name||'').toLowerCase().includes(q) ||
+        (r.phone||'').includes(q) ||
+        (r.reg_number||'').toLowerCase().includes(q) ||
+        (r.company||'').toLowerCase().includes(q) ||
+        (r.email||'').toLowerCase().includes(q)
+      );
+    }
+    currentPage = 1;
+    renderPage();
+  }
+
+  function renderPage() {
+    const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
+    if (currentPage > totalPages) currentPage = totalPages;
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const pageRows = filteredRows.slice(start, start + PAGE_SIZE);
+
+    const info = document.getElementById('regCountInfo');
+    if (filteredRows.length === allRows.length) {
+      info.textContent = '총 ' + allRows.length + '명';
+    } else {
+      info.textContent = '검색 ' + filteredRows.length + '명 / 총 ' + allRows.length + '명';
+    }
+
+    renderTable(pageRows);
+    renderPagination(totalPages);
+  }
+
+  function renderPagination(totalPages) {
+    const wrap = document.getElementById('paginationWrap');
+    wrap.innerHTML = '';
+    if (totalPages <= 1) return;
+    const btn = (label, page, disabled, active) => {
+      const b = document.createElement('button');
+      b.textContent = label;
+      b.disabled = !!disabled;
+      b.style.cssText = 'padding:6px 12px; border:1px solid #ddd; background:' + (active?'#e53e3e':'#fff') + '; color:' + (active?'#fff':'#333') + '; border-radius:6px; cursor:' + (disabled?'not-allowed':'pointer') + '; font-size:13px; min-width:36px;';
+      b.onclick = () => { currentPage = page; renderPage(); window.scrollTo({top:0,behavior:'smooth'}); };
+      return b;
+    };
+    wrap.appendChild(btn('이전', currentPage-1, currentPage===1));
+    // 페이지 번호 (현재 페이지 주변 5개)
+    const startP = Math.max(1, currentPage - 2);
+    const endP = Math.min(totalPages, startP + 4);
+    for (let i = startP; i <= endP; i++) {
+      wrap.appendChild(btn(String(i), i, false, i===currentPage));
+    }
+    wrap.appendChild(btn('다음', currentPage+1, currentPage===totalPages));
   }
 
   function renderTable(rows) {
@@ -742,7 +799,7 @@ const HTML_PAGE = `<!DOCTYPE html>
       const address = [row.address_sido, row.address_sigungu].filter(Boolean).join(' ');
       const dateStr = row.created_at ? new Date(row.created_at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) : '';
       tr.innerHTML =
-        '<td>' + (idx+1) + '</td>' +
+        '<td>' + (row._seq || (idx+1)) + '</td>' +
         '<td>' + (row.reg_number||'') + '</td>' +
         '<td id="v-name-' + row.id + '">' + (row.name||'') + '</td>' +
         '<td id="v-phone-' + row.id + '">' + (row.phone||'') + '</td>' +
@@ -838,14 +895,18 @@ const HTML_PAGE = `<!DOCTYPE html>
     else alert('오류: ' + (data.error||''));
   }
 
-  function exportExcel() {
-    fetch('/export', { headers: { 'Authorization': 'Basic ' + authToken } })
+  function exportExcel(filter) {
+    const url = '/export' + (filter && filter !== 'all' ? '?lang=' + filter : '');
+    const fname = filter === 'ko' ? 'registrations_ko.xlsx'
+                : filter === 'en' ? 'registrations_en.xlsx'
+                : 'registrations.xlsx';
+    fetch(url, { headers: { 'Authorization': 'Basic ' + authToken } })
       .then(res => res.blob())
       .then(blob => {
-        const url = URL.createObjectURL(blob);
+        const u = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url; a.download = 'registrations.xlsx';
-        a.click(); URL.revokeObjectURL(url);
+        a.href = u; a.download = fname;
+        a.click(); URL.revokeObjectURL(u);
       });
   }
 
@@ -1055,9 +1116,14 @@ app.http('exportExcel', {
   handler: async (request, context) => {
     if (!await verifyAdmin(request)) return { status: 401, jsonBody: { error: '인증 실패' } };
     try {
+      const url = new URL(request.url);
+      const lang = url.searchParams.get('lang');
       const p = await getPool();
-      const result = await p.request()
-        .query('SELECT * FROM registrations ORDER BY created_at ASC');
+      let query = 'SELECT * FROM registrations';
+      if (lang === 'ko') query += " WHERE language IS NULL OR language = 'ko'";
+      else if (lang === 'en') query += " WHERE language = 'en'";
+      query += ' ORDER BY created_at ASC';
+      const result = await p.request().query(query);
       const rows = result.recordset;
 
       const workbook = new ExcelJS.Workbook();

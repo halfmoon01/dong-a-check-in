@@ -1,3 +1,115 @@
+// ===== 다국어 (i18n) =====
+var I18N = {
+  ko: {
+    lblName: '성명 <span class="required">*</span>',
+    phName: '성명을 입력하세요',
+    lblPhone: '휴대폰 번호 <span class="required">*</span>',
+    lblSmsConsent: '문자(SMS), 카카오톡을 통한 박람회 개최 관련 정보 수신에 동의합니다. <span class="required">*</span>',
+    lblEmail: '이메일',
+    phEmail: '이메일',
+    optDirect: '직접입력',
+    lblNoEmail: '이메일 없음',
+    lblEmailConsent: '이메일을 통한 박람회 개최 관련 정보 수신에 동의합니다. <span class="required">*</span>',
+    lblCompany: '소속(회사)',
+    phCompany: '소속 또는 회사명을 입력하세요',
+    lblNoCompany: '소속/회사 없음',
+    lblGender: '성별 <span class="required">*</span>',
+    optMale: '남성',
+    optFemale: '여성',
+    lblAge: '연령 <span class="required">*</span>',
+    optAge10: '10대', optAge20: '20대', optAge30: '30대', optAge40: '40대', optAge50: '50대', optAge60: '60대 이상',
+    lblJob: '직업군 유형 <span class="required">*</span>',
+    optJob1: '관련업계종사자', optJob2: '예비건축주', optJob3: '국내외 바이어',
+    optJob4: '인테리어 수요자', optJob5: '일반관람객', optJob6: '기타 (직접 입력)',
+    phJobEtc: '직업군을 입력해주세요',
+    lblPrivacy: '개인정보 수집·이용 동의 <span class="required">*</span>',
+    lblPrivacyConsent: '위 개인정보 수집·이용에 동의합니다. (필수)',
+    btnSubmit: '현장 등록'
+  },
+  en: {
+    lblName: 'Name <span class="required">*</span>',
+    phName: 'Enter your full name',
+    lblPhone: 'Phone Number <span class="required">*</span>',
+    lblSmsConsent: 'I agree to receive SMS notifications about the exhibition. <span class="required">*</span>',
+    lblEmail: 'Email <span class="required">*</span>',
+    phEmail: 'Email',
+    optDirect: 'Other',
+    lblNoEmail: 'No Email',
+    lblEmailConsent: 'I agree to receive email notifications about the exhibition. <span class="required">*</span>',
+    lblCompany: 'Company / Affiliation',
+    phCompany: 'Enter your company or affiliation',
+    lblNoCompany: 'No company',
+    lblGender: 'Gender <span class="required">*</span>',
+    optMale: 'Male',
+    optFemale: 'Female',
+    lblAge: 'Age <span class="required">*</span>',
+    optAge10: 'Teens', optAge20: '20s', optAge30: '30s', optAge40: '40s', optAge50: '50s', optAge60: '60+',
+    lblJob: 'Occupation <span class="required">*</span>',
+    optJob1: 'Industry Professional', optJob2: 'Prospective Builder', optJob3: 'Buyer (Domestic/International)',
+    optJob4: 'Interior Customer', optJob5: 'General Visitor', optJob6: 'Other (specify)',
+    phJobEtc: 'Please specify',
+    lblPrivacy: 'Privacy Policy Agreement <span class="required">*</span>',
+    lblPrivacyConsent: 'I agree to the collection and use of personal information. (Required)',
+    btnSubmit: 'Register'
+  }
+};
+var currentLang = 'ko';
+
+function switchLang(lang) {
+  currentLang = lang;
+  var dict = I18N[lang];
+  document.querySelectorAll('[data-i18n]').forEach(function(el) {
+    var k = el.getAttribute('data-i18n');
+    if (dict[k] !== undefined) el.innerHTML = dict[k];
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(function(el) {
+    var k = el.getAttribute('data-i18n-ph');
+    if (dict[k] !== undefined) el.placeholder = dict[k];
+  });
+  // 토글 버튼 색상
+  var btnKo = document.getElementById('btnLangKo');
+  var btnEn = document.getElementById('btnLangEn');
+  if (lang === 'ko') {
+    btnKo.style.background = '#e53e3e'; btnKo.style.color = '#fff';
+    btnEn.style.background = '#fff'; btnEn.style.color = '#e53e3e';
+  } else {
+    btnEn.style.background = '#e53e3e'; btnEn.style.color = '#fff';
+    btnKo.style.background = '#fff'; btnKo.style.color = '#e53e3e';
+  }
+  // 휴대폰 입력 방식 전환
+  var phRowKo = document.getElementById('phoneRowKo');
+  var phRowEn = document.getElementById('phoneRowEn');
+  phRowKo.style.display = lang === 'ko' ? '' : 'none';
+  phRowEn.style.display = lang === 'en' ? 'flex' : 'none';
+  // 영어 모드에서는 한국 주소 숨김 + 이메일 없음 버튼 숨김
+  document.getElementById('grpAddress').style.display = lang === 'ko' ? 'block' : 'none';
+  document.getElementById('btnNoEmail').style.display = lang === 'ko' ? 'inline-block' : 'none';
+  // 영어 모드면 이메일 입력 강제로 보이게
+  if (lang === 'en') {
+    document.getElementById('emailSection').style.display = 'block';
+    document.getElementById('emailConsentRow').style.display = 'flex';
+  }
+
+  // closed / completion 페이지 텍스트
+  var closedTitle = document.getElementById('closedTitle');
+  var closedDesc = document.getElementById('closedDesc');
+  var compTitle = document.getElementById('completionTitle');
+  var compDone = document.getElementById('completionDoneText');
+  var exhTitle = document.getElementById('exhibitionName');
+  if (lang === 'en') {
+    if (closedTitle) closedTitle.textContent = 'Registration Closed';
+    if (closedDesc) closedDesc.textContent = 'On-site registration is currently closed.';
+    if (compTitle) compTitle.textContent = 'Registration Complete';
+    if (compDone) compDone.textContent = 'Your registration is complete.';
+    document.title = 'On-site Registration';
+  } else {
+    if (closedTitle) closedTitle.textContent = '등록이 마감되었습니다';
+    if (closedDesc) closedDesc.textContent = '현재 현장등록이 종료된 상태입니다.';
+    if (compTitle) compTitle.textContent = '현장 등록 완료';
+    if (compDone) compDone.textContent = '현장등록이 완료되었습니다.';
+  }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
 
   // 시/도 및 시/군/구 데이터
@@ -145,10 +257,24 @@ document.addEventListener('DOMContentLoaded', function() {
   // ===== 실시간 에러 해제 =====
 
   nameInput.addEventListener('input', function() {
+    // 숫자, 특수문자 제거 (한글/영문/공백/.만 허용)
+    this.value = this.value.replace(/[^가-힣ㄱ-ㅎㅏ-ㅣa-zA-Z\s.\-]/g, '');
     if (this.value.trim()) {
       clearError('grpName', 'errName');
       this.classList.remove('input-error');
     }
+  });
+
+  emailId.addEventListener('input', function() {
+    // @ 차단 (도메인이랑 중복 입력 방지)
+    this.value = this.value.replace(/@/g, '');
+    clearError('grpEmail', 'errEmail');
+  });
+
+  emailDomain.addEventListener('input', function() {
+    // @ 차단
+    this.value = this.value.replace(/@/g, '');
+    clearError('grpEmail', 'errEmail');
   });
 
   phoneMid.addEventListener('input', function() {
@@ -168,9 +294,6 @@ document.addEventListener('DOMContentLoaded', function() {
       phoneLast.classList.remove('input-error');
     }
   });
-
-  emailId.addEventListener('input', function() { clearError('grpEmail', 'errEmail'); });
-  emailDomain.addEventListener('input', function() { clearError('grpEmail', 'errEmail'); });
 
   smsConsent.addEventListener('change', function() {
     if (this.checked) clearError('grpPhone', 'errSms');
@@ -213,20 +336,31 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 휴대폰
-    var midVal = phoneMid.value.trim();
-    var lastVal = phoneLast.value.trim();
-    if (!midVal || !lastVal) {
-      showError('grpPhone', 'errPhone', '휴대폰 번호를 입력해주세요.');
-      if (!midVal) setInputError(phoneMid);
-      if (!lastVal) setInputError(phoneLast);
-      if (!firstEl) firstEl = document.getElementById('grpPhone');
-      valid = false;
-    } else if (midVal.length < 3 || lastVal.length < 4) {
-      showError('grpPhone', 'errPhone', '휴대폰 번호를 정확히 입력해주세요.');
-      if (midVal.length < 3) setInputError(phoneMid);
-      if (lastVal.length < 4) setInputError(phoneLast);
-      if (!firstEl) firstEl = document.getElementById('grpPhone');
-      valid = false;
+    if (currentLang === 'ko') {
+      var midVal = phoneMid.value.trim();
+      var lastVal = phoneLast.value.trim();
+      if (!midVal || !lastVal) {
+        showError('grpPhone', 'errPhone', '휴대폰 번호를 입력해주세요.');
+        if (!midVal) setInputError(phoneMid);
+        if (!lastVal) setInputError(phoneLast);
+        if (!firstEl) firstEl = document.getElementById('grpPhone');
+        valid = false;
+      } else if (midVal.length < 3 || lastVal.length < 4) {
+        showError('grpPhone', 'errPhone', '휴대폰 번호를 정확히 입력해주세요.');
+        if (midVal.length < 3) setInputError(phoneMid);
+        if (lastVal.length < 4) setInputError(phoneLast);
+        if (!firstEl) firstEl = document.getElementById('grpPhone');
+        valid = false;
+      }
+    } else {
+      var phoneFreeEl = document.getElementById('phoneFree');
+      var freeVal = phoneFreeEl.value.replace(/[^0-9]/g, '');
+      if (freeVal.length < 7) {
+        showError('grpPhone', 'errPhone', 'Please enter a valid phone number.');
+        setInputError(phoneFreeEl);
+        if (!firstEl) firstEl = document.getElementById('grpPhone');
+        valid = false;
+      }
     }
 
     // SMS/카카오톡 수신동의 (필수)
@@ -237,15 +371,25 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 이메일
-    if (!noEmail) {
-      var eId = emailId.value.trim();
-      var eDom = emailDomain.value.trim();
+    var eId = emailId.value.trim();
+    var eDom = emailDomain.value.trim();
+    if (currentLang === 'en') {
+      // 영어 모드: 이메일 필수
+      if (!eId || !eDom) {
+        showError('grpEmail', 'errEmail', 'Email is required.');
+        if (!firstEl) firstEl = document.getElementById('grpEmail');
+        valid = false;
+      } else if (!emailConsent.checked) {
+        showError('grpEmail', 'errEmailConsent', 'Please agree to email notifications.');
+        if (!firstEl) firstEl = document.getElementById('grpEmail');
+        valid = false;
+      }
+    } else if (!noEmail) {
       if ((eId && !eDom) || (!eId && eDom)) {
         showError('grpEmail', 'errEmail', '이메일 주소를 정확히 입력하거나 \'이메일 없음\'을 선택해주세요.');
         if (!firstEl) firstEl = document.getElementById('grpEmail');
         valid = false;
       }
-      // 이메일 수신동의 (이메일 입력 시 필수)
       if (eId && eDom && !emailConsent.checked) {
         showError('grpEmail', 'errEmailConsent', '이메일 수신 동의에 체크해주세요.');
         if (!firstEl) firstEl = document.getElementById('grpEmail');
@@ -253,17 +397,19 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 
-    // 주소
-    if (!addressSido.value) {
-      showError('grpAddress', 'errAddress', '시/도를 선택해주세요.');
-      setInputError(addressSido);
-      if (!firstEl) firstEl = document.getElementById('grpAddress');
-      valid = false;
-    } else if (!addressSigungu.value) {
-      showError('grpAddress', 'errAddress', '시/군/구를 선택해주세요.');
-      setInputError(addressSigungu);
-      if (!firstEl) firstEl = document.getElementById('grpAddress');
-      valid = false;
+    // 주소 (한국어만)
+    if (currentLang === 'ko') {
+      if (!addressSido.value) {
+        showError('grpAddress', 'errAddress', '시/도를 선택해주세요.');
+        setInputError(addressSido);
+        if (!firstEl) firstEl = document.getElementById('grpAddress');
+        valid = false;
+      } else if (!addressSigungu.value) {
+        showError('grpAddress', 'errAddress', '시/군/구를 선택해주세요.');
+        setInputError(addressSigungu);
+        if (!firstEl) firstEl = document.getElementById('grpAddress');
+        valid = false;
+      }
     }
 
     // 성별
@@ -323,15 +469,22 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     btnSubmit.disabled = true;
-    btnSubmit.textContent = '등록 중...';
+    btnSubmit.textContent = currentLang === 'en' ? 'Registering...' : '등록 중...';
 
     var name = nameInput.value.trim();
-    var phone = phonePrefix.value + '-' + phoneMid.value.trim() + '-' + phoneLast.value.trim();
+    var phone;
+    if (currentLang === 'ko') {
+      phone = phonePrefix.value + '-' + phoneMid.value.trim() + '-' + phoneLast.value.trim();
+    } else {
+      var cc = document.getElementById('phoneCountry').value.trim();
+      var pf = document.getElementById('phoneFree').value.trim();
+      phone = cc + ' ' + pf;
+    }
 
     var email = '';
-    if (!noEmail) {
-      var eId = emailId.value.trim();
-      var eDom = emailDomain.value.trim();
+    var eId = emailId.value.trim();
+    var eDom = emailDomain.value.trim();
+    if (currentLang === 'en' || !noEmail) {
       if (eId && eDom) email = eId + '@' + eDom;
     }
 
@@ -347,12 +500,13 @@ document.addEventListener('DOMContentLoaded', function() {
       email: email || null,
       email_consent: emailConsent.checked,
       company: company.value.trim() || null,
-      address_sido: addressSido.value,
-      address_sigungu: addressSigungu.value,
+      address_sido: currentLang === 'ko' ? addressSido.value : null,
+      address_sigungu: currentLang === 'ko' ? addressSigungu.value : null,
       gender: genderEl ? genderEl.value : null,
       age_group: ageGroup ? ageGroup.value : null,
       job_type: jobTypeVal,
-      privacy_consent: privacyConsent.checked
+      privacy_consent: privacyConsent.checked,
+      language: currentLang
     };
 
     fetch('/api/register', {
@@ -373,7 +527,7 @@ document.addEventListener('DOMContentLoaded', function() {
           showToast(result.data.error || '등록에 실패했습니다.');
         }
         btnSubmit.disabled = false;
-        btnSubmit.textContent = '현장 등록';
+        btnSubmit.textContent = currentLang === 'en' ? 'Register' : '현장 등록';
         return;
       }
 
@@ -395,7 +549,7 @@ document.addEventListener('DOMContentLoaded', function() {
       console.error(err);
       showToast('네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.');
       btnSubmit.disabled = false;
-      btnSubmit.textContent = '현장 등록';
+      btnSubmit.textContent = currentLang === 'en' ? 'Register' : '현장 등록';
     });
 
     return false;

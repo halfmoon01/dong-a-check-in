@@ -30,12 +30,16 @@
         <img id="exhibitionLogo" class="exhibition-logo" alt="박람회 로고">
       </div>
       <h2 id="exhibitionName" style="font-size:20px; color:#333; padding:12px 20px;">현장 등록</h2>
+      <div style="display:flex; justify-content:center; gap:0; padding:0 16px 12px;">
+        <button type="button" id="btnLangKo" onclick="switchLang('ko')" style="flex:1; max-width:140px; padding:8px 12px; border:1px solid #e53e3e; background:#e53e3e; color:#fff; border-radius:6px 0 0 6px; cursor:pointer; font-size:13px; font-weight:600;">한국어</button>
+        <button type="button" id="btnLangEn" onclick="switchLang('en')" style="flex:1; max-width:140px; padding:8px 12px; border:1px solid #e53e3e; background:#fff; color:#e53e3e; border-radius:0 6px 6px 0; cursor:pointer; font-size:13px; font-weight:600;">English</button>
+      </div>
     </div>
 
     <!-- Closed Page -->
     <div class="closed-page" id="closedPage">
-      <h2>등록이 마감되었습니다</h2>
-      <p>현재 현장등록이 종료된 상태입니다.</p>
+      <h2 id="closedTitle">등록이 마감되었습니다</h2>
+      <p id="closedDesc">현재 현장등록이 종료된 상태입니다.</p>
     </div>
 
     <!-- Registration Form -->
@@ -43,15 +47,16 @@
 
       <!-- 성명 -->
       <div class="form-group" id="grpName">
-        <span class="form-label">성명 <span class="required">*</span></span>
-        <input type="text" class="form-input" id="name" name="name" placeholder="성명을 입력하세요">
+        <span class="form-label" data-i18n="lblName">성명 <span class="required">*</span></span>
+        <input type="text" class="form-input" id="name" name="name" placeholder="성명을 입력하세요" data-i18n-ph="phName" maxlength="60">
         <div class="error-msg" id="errName">성명을 입력해주세요.</div>
       </div>
 
       <!-- 휴대폰 번호 -->
       <div class="form-group" id="grpPhone">
-        <span class="form-label">휴대폰 번호 <span class="required">*</span></span>
-        <div class="phone-row">
+        <span class="form-label" data-i18n="lblPhone">휴대폰 번호 <span class="required">*</span></span>
+        <!-- 한국어: 3칸 분할 -->
+        <div class="phone-row" id="phoneRowKo">
           <select class="form-select" id="phonePrefix" name="phonePrefix">
             <option value="010">010</option>
             <option value="011">011</option>
@@ -65,26 +70,31 @@
           <span class="phone-dash">-</span>
           <input type="tel" class="form-input" id="phoneLast" maxlength="4" placeholder="0000" inputmode="numeric">
         </div>
+        <!-- 영어: 국가번호 + 자유 입력 -->
+        <div id="phoneRowEn" style="display:none; gap:8px;">
+          <input type="text" class="form-input" id="phoneCountry" placeholder="+1" style="max-width:90px;" value="+1">
+          <input type="tel" class="form-input" id="phoneFree" placeholder="Phone number" inputmode="tel">
+        </div>
         <div class="error-msg" id="errPhone">휴대폰 번호를 정확히 입력해주세요.</div>
         <div class="checkbox-row" style="margin-top:12px;">
           <input type="checkbox" id="smsConsent" name="sms_consent">
-          <label for="smsConsent">문자(SMS), 카카오톡을 통한 박람회 개최 관련 정보 수신에 동의합니다. <span class="required">*</span></label>
+          <label for="smsConsent" data-i18n="lblSmsConsent">문자(SMS), 카카오톡을 통한 박람회 개최 관련 정보 수신에 동의합니다. <span class="required">*</span></label>
         </div>
         <div class="error-msg" id="errSms">문자(SMS), 카카오톡 수신 동의에 체크해주세요.</div>
       </div>
 
       <!-- 이메일 -->
       <div class="form-group" id="grpEmail">
-        <span class="form-label">이메일</span>
+        <span class="form-label" data-i18n="lblEmail">이메일</span>
         <div id="emailSection">
           <div class="email-row">
-            <input type="text" class="form-input" id="emailId" placeholder="이메일">
+            <input type="text" class="form-input" id="emailId" placeholder="이메일" data-i18n-ph="phEmail">
           </div>
           <div class="email-domain-row">
             <span class="email-at">@</span>
             <input type="text" class="form-input" id="emailDomain" placeholder="">
             <select class="form-select" id="emailDomainSelect" onchange="handleEmailDomain()">
-              <option value="">직접입력</option>
+              <option value="" data-i18n="optDirect">직접입력</option>
               <option value="naver.com">naver.com</option>
               <option value="gmail.com">gmail.com</option>
               <option value="daum.net">daum.net</option>
@@ -94,26 +104,26 @@
             </select>
           </div>
         </div>
-        <button type="button" class="btn-no-email" id="btnNoEmail" onclick="toggleNoEmail()">이메일 없음</button>
+        <button type="button" class="btn-no-email" id="btnNoEmail" onclick="toggleNoEmail()" data-i18n="lblNoEmail">이메일 없음</button>
         <div class="error-msg" id="errEmail">이메일 주소를 정확히 입력하거나 '이메일 없음'을 선택해주세요.</div>
         <div class="checkbox-row" id="emailConsentRow">
           <input type="checkbox" id="emailConsent" name="email_consent">
-          <label for="emailConsent">이메일을 통한 박람회 개최 관련 정보 수신에 동의합니다. <span class="required">*</span></label>
+          <label for="emailConsent" data-i18n="lblEmailConsent">이메일을 통한 박람회 개최 관련 정보 수신에 동의합니다. <span class="required">*</span></label>
         </div>
         <div class="error-msg" id="errEmailConsent">이메일 수신 동의에 체크해주세요.</div>
       </div>
 
       <!-- 소속(회사) -->
       <div class="form-group" id="grpCompany">
-        <span class="form-label">소속(회사)</span>
-        <input type="text" class="form-input" id="company" name="company" placeholder="소속 또는 회사명을 입력하세요">
+        <span class="form-label" data-i18n="lblCompany">소속(회사)</span>
+        <input type="text" class="form-input" id="company" name="company" placeholder="소속 또는 회사명을 입력하세요" data-i18n-ph="phCompany">
         <div class="checkbox-row" style="margin-top:8px;">
           <input type="checkbox" id="noCompany" onchange="document.getElementById('company').disabled=this.checked; if(this.checked) document.getElementById('company').value='';">
-          <label for="noCompany">소속/회사 없음</label>
+          <label for="noCompany" data-i18n="lblNoCompany">소속/회사 없음</label>
         </div>
       </div>
 
-      <!-- 주소 -->
+      <!-- 주소 (한국어 전용) -->
       <div class="form-group" id="grpAddress">
         <span class="form-label">주소 <span class="required">*</span></span>
         <div class="address-row">
@@ -129,15 +139,15 @@
 
       <!-- 성별 -->
       <div class="form-group" id="grpGender">
-        <span class="form-label">성별 <span class="required">*</span></span>
+        <span class="form-label" data-i18n="lblGender">성별 <span class="required">*</span></span>
         <div class="radio-group">
           <div class="radio-item">
             <input type="radio" name="gender" id="genderM" value="남성">
-            <label for="genderM">남성</label>
+            <label for="genderM" data-i18n="optMale">남성</label>
           </div>
           <div class="radio-item">
             <input type="radio" name="gender" id="genderF" value="여성">
-            <label for="genderF">여성</label>
+            <label for="genderF" data-i18n="optFemale">여성</label>
           </div>
         </div>
         <div class="error-msg" id="errGender">성별을 선택해주세요.</div>
@@ -145,31 +155,31 @@
 
       <!-- 연령 -->
       <div class="form-group" id="grpAge">
-        <span class="form-label">연령 <span class="required">*</span></span>
+        <span class="form-label" data-i18n="lblAge">연령 <span class="required">*</span></span>
         <div class="radio-group">
           <div class="radio-item">
             <input type="radio" name="age_group" id="age10" value="10대">
-            <label for="age10">10대</label>
+            <label for="age10" data-i18n="optAge10">10대</label>
           </div>
           <div class="radio-item">
             <input type="radio" name="age_group" id="age20" value="20대">
-            <label for="age20">20대</label>
+            <label for="age20" data-i18n="optAge20">20대</label>
           </div>
           <div class="radio-item">
             <input type="radio" name="age_group" id="age30" value="30대">
-            <label for="age30">30대</label>
+            <label for="age30" data-i18n="optAge30">30대</label>
           </div>
           <div class="radio-item">
             <input type="radio" name="age_group" id="age40" value="40대">
-            <label for="age40">40대</label>
+            <label for="age40" data-i18n="optAge40">40대</label>
           </div>
           <div class="radio-item">
             <input type="radio" name="age_group" id="age50" value="50대">
-            <label for="age50">50대</label>
+            <label for="age50" data-i18n="optAge50">50대</label>
           </div>
           <div class="radio-item">
             <input type="radio" name="age_group" id="age60" value="60대 이상">
-            <label for="age60">60대 이상</label>
+            <label for="age60" data-i18n="optAge60">60대 이상</label>
           </div>
         </div>
         <div class="error-msg" id="errAge">연령대를 선택해주세요.</div>
@@ -177,34 +187,34 @@
 
       <!-- 직업군 유형 -->
       <div class="form-group" id="grpJob">
-        <span class="form-label">직업군 유형 <span class="required">*</span></span>
+        <span class="form-label" data-i18n="lblJob">직업군 유형 <span class="required">*</span></span>
         <div class="radio-group" style="flex-direction:column; gap:10px;">
           <div class="radio-item">
             <input type="radio" name="job_type" id="job1" value="관련업계종사자">
-            <label for="job1">관련업계종사자</label>
+            <label for="job1" data-i18n="optJob1">관련업계종사자</label>
           </div>
           <div class="radio-item">
             <input type="radio" name="job_type" id="job2" value="예비건축주">
-            <label for="job2">예비건축주</label>
+            <label for="job2" data-i18n="optJob2">예비건축주</label>
           </div>
           <div class="radio-item">
             <input type="radio" name="job_type" id="job3" value="국내외 바이어">
-            <label for="job3">국내외 바이어</label>
+            <label for="job3" data-i18n="optJob3">국내외 바이어</label>
           </div>
           <div class="radio-item">
             <input type="radio" name="job_type" id="job4" value="인테리어 수요자">
-            <label for="job4">인테리어 수요자</label>
+            <label for="job4" data-i18n="optJob4">인테리어 수요자</label>
           </div>
           <div class="radio-item">
             <input type="radio" name="job_type" id="job5" value="일반관람객">
-            <label for="job5">일반관람객</label>
+            <label for="job5" data-i18n="optJob5">일반관람객</label>
           </div>
           <div class="radio-item">
             <input type="radio" name="job_type" id="job6" value="기타" onchange="document.getElementById('jobEtcWrap').style.display='block'">
-            <label for="job6">기타 (직접 입력)</label>
+            <label for="job6" data-i18n="optJob6">기타 (직접 입력)</label>
           </div>
           <div id="jobEtcWrap" style="display:none; padding-left:24px;">
-            <input type="text" id="jobEtcInput" placeholder="직업군을 입력해주세요" style="width:100%; padding:10px 12px; border:1px solid #ddd; border-radius:6px; font-size:14px;">
+            <input type="text" id="jobEtcInput" placeholder="직업군을 입력해주세요" data-i18n-ph="phJobEtc" style="width:100%; padding:10px 12px; border:1px solid #ddd; border-radius:6px; font-size:14px;">
           </div>
         </div>
         <div class="error-msg" id="errJob">직업군을 선택해주세요.</div>
@@ -212,25 +222,25 @@
 
       <!-- 개인정보 수집 동의 -->
       <div class="form-group" id="grpPrivacy">
-        <span class="form-label">개인정보 수집·이용 동의 <span class="required">*</span></span>
+        <span class="form-label" data-i18n="lblPrivacy">개인정보 수집·이용 동의 <span class="required">*</span></span>
         <div class="privacy-box" id="privacyBox"></div>
         <div class="checkbox-row">
           <input type="checkbox" id="privacyConsent" name="privacy_consent">
-          <label for="privacyConsent">위 개인정보 수집·이용에 동의합니다. (필수)</label>
+          <label for="privacyConsent" data-i18n="lblPrivacyConsent">위 개인정보 수집·이용에 동의합니다. (필수)</label>
         </div>
         <div class="error-msg" id="errPrivacy">개인정보 수집·이용에 동의해주세요.</div>
       </div>
 
       <!-- 등록 버튼 -->
       <div class="submit-section">
-        <button type="submit" class="btn-submit" id="btnSubmit">현장 등록</button>
+        <button type="submit" class="btn-submit" id="btnSubmit" data-i18n="btnSubmit">현장 등록</button>
       </div>
     </form>
 
     <!-- Completion Page -->
     <div class="completion-page" id="completionPage">
       <div class="completion-banner">
-        <h2>현장 등록 완료</h2>
+        <h2 id="completionTitle">현장 등록 완료</h2>
       </div>
       <div class="completion-card">
         <img class="qr-image" id="qrImage" alt="QR Code">
@@ -239,7 +249,7 @@
         <div class="reg-job" id="regJobDisplay"></div>
       </div>
       <div class="completion-info">
-        <strong>현장등록이 완료되었습니다.</strong>
+        <strong id="completionDoneText">현장등록이 완료되었습니다.</strong>
         <div id="completionMsg1" style="margin-top:16px; font-size:17px; font-weight:600;"></div>
         <div id="completionMsg2" style="margin-top:8px; font-size:13px; color:#888;"></div>
       </div>
