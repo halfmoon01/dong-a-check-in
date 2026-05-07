@@ -53,6 +53,48 @@ var I18N = {
     btnSubmit: 'Register'
   }
 };
+var ERR_I18N = {
+  ko: {
+    name: '성명을 입력해주세요.',
+    phoneEmpty: '휴대폰 번호를 입력해주세요.',
+    phoneInvalid: '휴대폰 번호를 정확히 입력해주세요.',
+    sms: '문자(SMS), 카카오톡 수신 동의에 체크해주세요.',
+    emailRequired: '이메일을 입력해주세요.',
+    emailFormat: '이메일 주소를 정확히 입력하거나 \'이메일 없음\'을 선택해주세요.',
+    emailConsent: '이메일 수신 동의에 체크해주세요.',
+    sido: '시/도를 선택해주세요.',
+    sigungu: '시/군/구를 선택해주세요.',
+    gender: '성별을 선택해주세요.',
+    age: '연령대를 선택해주세요.',
+    job: '직업군을 선택해주세요.',
+    jobEtc: '직업군을 직접 입력해주세요.',
+    privacy: '개인정보 수집·이용에 동의해주세요.',
+    submitting: '등록 중...',
+    closed: '현재 등록이 마감되었습니다.',
+    failed: '등록에 실패했습니다.',
+    network: '네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.'
+  },
+  en: {
+    name: 'Please enter your name.',
+    phoneEmpty: 'Please enter your phone number.',
+    phoneInvalid: 'Please enter a valid phone number.',
+    sms: 'Please agree to SMS notifications.',
+    emailRequired: 'Email is required.',
+    emailFormat: 'Please enter a valid email address.',
+    emailConsent: 'Please agree to email notifications.',
+    sido: 'Please select a region.',
+    sigungu: 'Please select a district.',
+    gender: 'Please select your gender.',
+    age: 'Please select your age group.',
+    job: 'Please select your occupation.',
+    jobEtc: 'Please specify your occupation.',
+    privacy: 'Please agree to the privacy policy.',
+    submitting: 'Registering...',
+    closed: 'Registration is currently closed.',
+    failed: 'Registration failed.',
+    network: 'Network error. Please check your connection.'
+  }
+};
 var currentLang = 'ko';
 
 function switchLang(lang) {
@@ -326,10 +368,11 @@ document.addEventListener('DOMContentLoaded', function() {
     clearAllErrors();
     var valid = true;
     var firstEl = null;
+    var T = ERR_I18N[currentLang];
 
     // 성명
     if (!nameInput.value.trim()) {
-      showError('grpName', 'errName', '성명을 입력해주세요.');
+      showError('grpName', 'errName', T.name);
       setInputError(nameInput);
       if (!firstEl) firstEl = document.getElementById('grpName');
       valid = false;
@@ -340,13 +383,13 @@ document.addEventListener('DOMContentLoaded', function() {
       var midVal = phoneMid.value.trim();
       var lastVal = phoneLast.value.trim();
       if (!midVal || !lastVal) {
-        showError('grpPhone', 'errPhone', '휴대폰 번호를 입력해주세요.');
+        showError('grpPhone', 'errPhone', T.phoneEmpty);
         if (!midVal) setInputError(phoneMid);
         if (!lastVal) setInputError(phoneLast);
         if (!firstEl) firstEl = document.getElementById('grpPhone');
         valid = false;
       } else if (midVal.length < 3 || lastVal.length < 4) {
-        showError('grpPhone', 'errPhone', '휴대폰 번호를 정확히 입력해주세요.');
+        showError('grpPhone', 'errPhone', T.phoneInvalid);
         if (midVal.length < 3) setInputError(phoneMid);
         if (lastVal.length < 4) setInputError(phoneLast);
         if (!firstEl) firstEl = document.getElementById('grpPhone');
@@ -356,7 +399,7 @@ document.addEventListener('DOMContentLoaded', function() {
       var phoneFreeEl = document.getElementById('phoneFree');
       var freeVal = phoneFreeEl.value.replace(/[^0-9]/g, '');
       if (freeVal.length < 7) {
-        showError('grpPhone', 'errPhone', 'Please enter a valid phone number.');
+        showError('grpPhone', 'errPhone', T.phoneInvalid);
         setInputError(phoneFreeEl);
         if (!firstEl) firstEl = document.getElementById('grpPhone');
         valid = false;
@@ -365,7 +408,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // SMS/카카오톡 수신동의 (필수)
     if (!smsConsent.checked) {
-      showError('grpPhone', 'errSms', '문자(SMS), 카카오톡 수신 동의에 체크해주세요.');
+      showError('grpPhone', 'errSms', T.sms);
       if (!firstEl) firstEl = document.getElementById('grpPhone');
       valid = false;
     }
@@ -374,24 +417,23 @@ document.addEventListener('DOMContentLoaded', function() {
     var eId = emailId.value.trim();
     var eDom = emailDomain.value.trim();
     if (currentLang === 'en') {
-      // 영어 모드: 이메일 필수
       if (!eId || !eDom) {
-        showError('grpEmail', 'errEmail', 'Email is required.');
+        showError('grpEmail', 'errEmail', T.emailRequired);
         if (!firstEl) firstEl = document.getElementById('grpEmail');
         valid = false;
       } else if (!emailConsent.checked) {
-        showError('grpEmail', 'errEmailConsent', 'Please agree to email notifications.');
+        showError('grpEmail', 'errEmailConsent', T.emailConsent);
         if (!firstEl) firstEl = document.getElementById('grpEmail');
         valid = false;
       }
     } else if (!noEmail) {
       if ((eId && !eDom) || (!eId && eDom)) {
-        showError('grpEmail', 'errEmail', '이메일 주소를 정확히 입력하거나 \'이메일 없음\'을 선택해주세요.');
+        showError('grpEmail', 'errEmail', T.emailFormat);
         if (!firstEl) firstEl = document.getElementById('grpEmail');
         valid = false;
       }
       if (eId && eDom && !emailConsent.checked) {
-        showError('grpEmail', 'errEmailConsent', '이메일 수신 동의에 체크해주세요.');
+        showError('grpEmail', 'errEmailConsent', T.emailConsent);
         if (!firstEl) firstEl = document.getElementById('grpEmail');
         valid = false;
       }
@@ -400,12 +442,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // 주소 (한국어만)
     if (currentLang === 'ko') {
       if (!addressSido.value) {
-        showError('grpAddress', 'errAddress', '시/도를 선택해주세요.');
+        showError('grpAddress', 'errAddress', T.sido);
         setInputError(addressSido);
         if (!firstEl) firstEl = document.getElementById('grpAddress');
         valid = false;
       } else if (!addressSigungu.value) {
-        showError('grpAddress', 'errAddress', '시/군/구를 선택해주세요.');
+        showError('grpAddress', 'errAddress', T.sigungu);
         setInputError(addressSigungu);
         if (!firstEl) firstEl = document.getElementById('grpAddress');
         valid = false;
@@ -414,14 +456,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 성별
     if (!document.querySelector('input[name="gender"]:checked')) {
-      showError('grpGender', 'errGender', '성별을 선택해주세요.');
+      showError('grpGender', 'errGender', T.gender);
       if (!firstEl) firstEl = document.getElementById('grpGender');
       valid = false;
     }
 
     // 연령
     if (!document.querySelector('input[name="age_group"]:checked')) {
-      showError('grpAge', 'errAge', '연령대를 선택해주세요.');
+      showError('grpAge', 'errAge', T.age);
       if (!firstEl) firstEl = document.getElementById('grpAge');
       valid = false;
     }
@@ -429,13 +471,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // 직업군
     var jobChecked = document.querySelector('input[name="job_type"]:checked');
     if (!jobChecked) {
-      showError('grpJob', 'errJob', '직업군을 선택해주세요.');
+      showError('grpJob', 'errJob', T.job);
       if (!firstEl) firstEl = document.getElementById('grpJob');
       valid = false;
     } else if (jobChecked.value === '기타') {
       var etcVal = document.getElementById('jobEtcInput').value.trim();
       if (!etcVal) {
-        showError('grpJob', 'errJob', '직업군을 직접 입력해주세요.');
+        showError('grpJob', 'errJob', T.jobEtc);
         if (!firstEl) firstEl = document.getElementById('grpJob');
         valid = false;
       }
@@ -443,7 +485,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 개인정보 동의
     if (!privacyConsent.checked) {
-      showError('grpPrivacy', 'errPrivacy', '개인정보 수집·이용에 동의해주세요.');
+      showError('grpPrivacy', 'errPrivacy', T.privacy);
       if (!firstEl) firstEl = document.getElementById('grpPrivacy');
       valid = false;
     }
@@ -469,7 +511,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     btnSubmit.disabled = true;
-    btnSubmit.textContent = currentLang === 'en' ? 'Registering...' : '등록 중...';
+    btnSubmit.textContent = ERR_I18N[currentLang].submitting;
 
     var name = nameInput.value.trim();
     var phone;
@@ -522,9 +564,9 @@ document.addEventListener('DOMContentLoaded', function() {
     .then(function(result) {
       if (!result.ok) {
         if (result.status === 503) {
-          showToast('현재 등록이 마감되었습니다.');
+          showToast(ERR_I18N[currentLang].closed);
         } else {
-          showToast(result.data.error || '등록에 실패했습니다.');
+          showToast(result.data.error || ERR_I18N[currentLang].failed);
         }
         btnSubmit.disabled = false;
         btnSubmit.textContent = currentLang === 'en' ? 'Register' : '현장 등록';
@@ -547,7 +589,7 @@ document.addEventListener('DOMContentLoaded', function() {
     })
     .catch(function(err) {
       console.error(err);
-      showToast('네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.');
+      showToast(ERR_I18N[currentLang].network);
       btnSubmit.disabled = false;
       btnSubmit.textContent = currentLang === 'en' ? 'Register' : '현장 등록';
     });
