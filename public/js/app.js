@@ -123,8 +123,10 @@ function switchLang(lang) {
   var phRowEn = document.getElementById('phoneRowEn');
   phRowKo.style.display = lang === 'ko' ? '' : 'none';
   phRowEn.style.display = lang === 'en' ? 'flex' : 'none';
-  // 영어 모드에서는 한국 주소 숨김 + 이메일 없음 버튼 숨김
+  // 영어 모드: 한국 주소 숨김 + 영어 주소 표시 + 이메일 없음 버튼 숨김
   document.getElementById('grpAddress').style.display = lang === 'ko' ? 'block' : 'none';
+  var grpEn = document.getElementById('grpAddressEn');
+  if (grpEn) grpEn.style.display = lang === 'en' ? 'block' : 'none';
   document.getElementById('btnNoEmail').style.display = lang === 'ko' ? 'inline-block' : 'none';
   // 영어 모드면 이메일 입력 강제로 보이게
   if (lang === 'en') {
@@ -308,9 +310,39 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   emailId.addEventListener('input', function() {
-    // @ 차단 (도메인이랑 중복 입력 방지)
-    this.value = this.value.replace(/@/g, '');
+    // 풀 이메일 입력 시 자동으로 ID/도메인 분리
+    if (this.value.indexOf('@') !== -1) {
+      var parts = this.value.split('@');
+      this.value = parts[0];
+      var rest = parts.slice(1).join('').replace(/@/g, '');
+      if (rest) {
+        emailDomain.value = rest;
+        emailDomain.readOnly = false;
+        emailDomainSelect.value = '';
+      }
+    }
     clearError('grpEmail', 'errEmail');
+  });
+
+  // 입력 끝나면 ID에 도메인 들어있는 경우 자동 제거
+  emailId.addEventListener('blur', function() {
+    var val = this.value.trim();
+    var domains = ['naver.com','gmail.com','daum.net','hanmail.net','nate.com','kakao.com','outlook.com','hotmail.com','yahoo.com','icloud.com'];
+    for (var i = 0; i < domains.length; i++) {
+      if (val.toLowerCase().endsWith(domains[i])) {
+        var idPart = val.slice(0, val.length - domains[i].length);
+        // 끝의 @ 또는 . 제거
+        idPart = idPart.replace(/[@.]+$/, '');
+        if (idPart) {
+          this.value = idPart;
+          // 도메인이 비어있으면 자동으로 채움
+          if (!emailDomain.value) {
+            emailDomain.value = domains[i];
+          }
+        }
+        break;
+      }
+    }
   });
 
   emailDomain.addEventListener('input', function() {
@@ -542,7 +574,11 @@ document.addEventListener('DOMContentLoaded', function() {
       email: email || null,
       email_consent: emailConsent.checked,
       company: company.value.trim() || null,
-      address_sido: currentLang === 'ko' ? addressSido.value : null,
+      address_sido: currentLang === 'ko'
+        ? addressSido.value
+        : (document.getElementById('noAddressEn') && document.getElementById('noAddressEn').checked
+            ? null
+            : (document.getElementById('addressFreeEn').value.trim() || null)),
       address_sigungu: currentLang === 'ko' ? addressSigungu.value : null,
       gender: genderEl ? genderEl.value : null,
       age_group: ageGroup ? ageGroup.value : null,

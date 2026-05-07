@@ -123,7 +123,7 @@
         </div>
       </div>
 
-      <!-- 주소 (한국어 전용) -->
+      <!-- 주소 (한국어) -->
       <div class="form-group" id="grpAddress">
         <span class="form-label">주소 <span class="required">*</span></span>
         <div class="address-row">
@@ -135,6 +135,16 @@
           </select>
         </div>
         <div class="error-msg" id="errAddress">주소를 선택해주세요.</div>
+      </div>
+
+      <!-- 주소 (영어) -->
+      <div class="form-group" id="grpAddressEn" style="display:none;">
+        <span class="form-label">Address</span>
+        <input type="text" class="form-input" id="addressFreeEn" placeholder="City, Country">
+        <div class="checkbox-row" style="margin-top:8px;">
+          <input type="checkbox" id="noAddressEn" onchange="document.getElementById('addressFreeEn').disabled=this.checked; if(this.checked) document.getElementById('addressFreeEn').value='';">
+          <label for="noAddressEn">No address</label>
+        </div>
       </div>
 
       <!-- 성별 -->
