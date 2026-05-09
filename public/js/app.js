@@ -164,8 +164,22 @@ function switchLang(lang) {
     btnKo.style.background = '#fff'; btnKo.style.color = '#e53e3e';
   }
   // 휴대폰 입력 방식 전환
-  document.getElementById('phoneRowKo').style.display = lang === 'ko' ? '' : 'none';
-  document.getElementById('phoneRowEn').style.display = lang === 'en' ? 'flex' : 'none';
+  var useKr = document.getElementById('useKrPhone');
+  var useKrRow = document.getElementById('useKrPhoneRow');
+  if (lang === 'ko') {
+    document.getElementById('phoneRowKo').style.display = '';
+    document.getElementById('phoneRowEn').style.display = 'none';
+    if (useKrRow) useKrRow.style.display = 'none';
+  } else {
+    if (useKrRow) useKrRow.style.display = 'flex';
+    if (useKr && useKr.checked) {
+      document.getElementById('phoneRowKo').style.display = '';
+      document.getElementById('phoneRowEn').style.display = 'none';
+    } else {
+      document.getElementById('phoneRowKo').style.display = 'none';
+      document.getElementById('phoneRowEn').style.display = 'flex';
+    }
+  }
   // 영어 모드: 한국 주소 숨김 / 국가 드롭다운 표시 / 이메일 없음 버튼 숨김
   document.getElementById('grpAddress').style.display = lang === 'ko' ? 'block' : 'none';
   document.getElementById('grpCountry').style.display = lang === 'en' ? 'block' : 'none';
@@ -507,7 +521,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 휴대폰
-    if (currentLang === 'ko') {
+    var useKrChecked = document.getElementById('useKrPhone') && document.getElementById('useKrPhone').checked;
+    var useKoreanFormat = currentLang === 'ko' || (currentLang === 'en' && useKrChecked);
+    if (useKoreanFormat) {
       var midVal = phoneMid.value.trim();
       var lastVal = phoneLast.value.trim();
       if (!midVal || !lastVal) {
@@ -661,7 +677,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     var name = nameInput.value.trim();
     var phone;
-    if (currentLang === 'ko') {
+    var useKrChecked2 = document.getElementById('useKrPhone') && document.getElementById('useKrPhone').checked;
+    var useKoreanFormat2 = currentLang === 'ko' || (currentLang === 'en' && useKrChecked2);
+    if (useKoreanFormat2) {
       phone = phonePrefix.value + '-' + phoneMid.value.trim() + '-' + phoneLast.value.trim();
     } else {
       var cc = document.getElementById('phoneCountry').value.trim();
@@ -773,8 +791,9 @@ document.addEventListener('DOMContentLoaded', function() {
         document.title = settings.exhibition_name + ' 현장등록';
       }
 
-      if (settings.privacy_text) {
-        privacyBox.textContent = settings.privacy_text;
+      var pt = currentLang === 'en' ? (settings.privacy_text_en || settings.privacy_text) : settings.privacy_text;
+      if (pt) {
+        privacyBox.textContent = pt;
       }
 
       if (settings.exhibition_logo) {
@@ -807,6 +826,22 @@ document.addEventListener('DOMContentLoaded', function() {
   // ===== 초기화 =====
   populateSido();
   populateCountries();
+
+  // 영어 모드에서 "한국 번호 사용" 토글
+  var useKrCb = document.getElementById('useKrPhone');
+  if (useKrCb) {
+    useKrCb.addEventListener('change', function() {
+      if (currentLang !== 'en') return;
+      if (this.checked) {
+        document.getElementById('phoneRowKo').style.display = '';
+        document.getElementById('phoneRowEn').style.display = 'none';
+      } else {
+        document.getElementById('phoneRowKo').style.display = 'none';
+        document.getElementById('phoneRowEn').style.display = 'flex';
+      }
+    });
+  }
+
   loadSettings();
 
   // 3초마다 설정 자동 갱신 (관리자 변경 실시간 반영)

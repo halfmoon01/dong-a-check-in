@@ -84,6 +84,11 @@
           <input type="text" class="form-input" id="phoneCountry" placeholder="+1" style="max-width:90px;" readonly>
           <input type="tel" class="form-input" id="phoneFree" placeholder="Phone number" inputmode="tel">
         </div>
+        <!-- 영어 모드: 한국 번호 사용 체크박스 -->
+        <div class="checkbox-row" id="useKrPhoneRow" style="display:none; margin-top:8px;">
+          <input type="checkbox" id="useKrPhone">
+          <label for="useKrPhone">I have a Korean phone number (한국 번호 사용)</label>
+        </div>
         <div class="error-msg" id="errPhone">휴대폰 번호를 정확히 입력해주세요.</div>
         <div class="checkbox-row" style="margin-top:12px;">
           <input type="checkbox" id="smsConsent" name="sms_consent">

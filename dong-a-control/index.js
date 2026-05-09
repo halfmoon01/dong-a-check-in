@@ -267,7 +267,14 @@ const HTML_PAGE = `<!DOCTYPE html>
     <!-- Privacy Text -->
     <div class="card">
       <h3>개인정보 수집·이용 동의 문구</h3>
-      <textarea class="admin-textarea" id="privacyText"></textarea>
+      <div class="form-row">
+        <label>한국어</label>
+        <textarea class="admin-textarea" id="privacyText"></textarea>
+      </div>
+      <div class="form-row" style="margin-top:12px;">
+        <label>English (외국인용)</label>
+        <textarea class="admin-textarea" id="privacyTextEn"></textarea>
+      </div>
       <div class="btn-row">
         <button class="btn btn-primary" onclick="savePrivacy()" style="padding:10px 40px;">저장</button>
       </div>
@@ -429,6 +436,7 @@ const HTML_PAGE = `<!DOCTYPE html>
       document.getElementById('serverToggle').classList.toggle('on', isOpen);
       document.getElementById('serverStatus').textContent = isOpen ? '등록 열림' : '등록 닫힘';
       document.getElementById('privacyText').value = settings.privacy_text || '';
+      document.getElementById('privacyTextEn').value = settings.privacy_text_en || '';
       document.getElementById('exhibitionName').value = settings.exhibition_name || '';
 
       if (settings.exhibition_logo) {
@@ -553,6 +561,11 @@ const HTML_PAGE = `<!DOCTYPE html>
 
   async function savePrivacy() {
     const text = document.getElementById('privacyText').value;
+    const textEn = document.getElementById('privacyTextEn').value;
+    await fetch('/settings', {
+      method: 'POST', headers: headers(),
+      body: JSON.stringify({ key: 'privacy_text_en', value: textEn })
+    });
     await fetch('/settings', {
       method: 'POST', headers: headers(),
       body: JSON.stringify({ key: 'privacy_text', value: text })
@@ -1033,7 +1046,7 @@ app.http('postSettings', {
   handler: async (request) => {
     if (!await verifyAdmin(request)) return { status: 401, jsonBody: { error: '인증 실패' } };
     const { key, value } = await request.json();
-    const allowed = ['server_open', 'privacy_text', 'exhibition_name', 'admin_id', 'admin_pw', 'exhibition_logo', 'completion_msg1', 'completion_msg1_color', 'completion_msg1_size', 'completion_msg2', 'completion_msg2_color', 'completion_msg2_size', 'completion_msg1_en', 'completion_msg2_en'];
+    const allowed = ['server_open', 'privacy_text', 'privacy_text_en', 'exhibition_name', 'admin_id', 'admin_pw', 'exhibition_logo', 'completion_msg1', 'completion_msg1_color', 'completion_msg1_size', 'completion_msg2', 'completion_msg2_color', 'completion_msg2_size', 'completion_msg1_en', 'completion_msg2_en'];
     if (!allowed.includes(key)) return { status: 400, jsonBody: { error: '허용되지 않는 설정입니다.' } };
     try {
       const p = await getPool();
