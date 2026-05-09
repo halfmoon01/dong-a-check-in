@@ -375,9 +375,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // ===== 실시간 에러 해제 =====
 
-  nameInput.addEventListener('input', function() {
-    // 완성 한글(가-힣) + 영문 + 공백 + .- 만 허용 (자음/모음 단독 입력 차단)
+  var nameComposing = false;
+  nameInput.addEventListener('compositionstart', function() { nameComposing = true; });
+  nameInput.addEventListener('compositionend', function() {
+    nameComposing = false;
+    // 조합 끝나면 자모만 남은 거 정리
     this.value = this.value.replace(/[^가-힣a-zA-Z\s.\-]/g, '');
+  });
+  nameInput.addEventListener('input', function() {
+    if (!nameComposing) {
+      // 조합 중이 아닐 때만 필터링 (영문/숫자/특수문자 차단)
+      this.value = this.value.replace(/[^가-힣a-zA-Z\s.\-]/g, '');
+    }
     if (this.value.trim()) {
       clearError('grpName', 'errName');
       this.classList.remove('input-error');
