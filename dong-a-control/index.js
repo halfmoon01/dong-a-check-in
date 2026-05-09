@@ -350,6 +350,11 @@ const HTML_PAGE = `<!DOCTYPE html>
       </div>
       <div style="display:flex; gap:12px; align-items:center; margin-bottom:12px; flex-wrap:wrap;">
         <input type="text" class="admin-input" id="searchInput" placeholder="이름, 연락처, 등록번호, 소속으로 검색..." oninput="filterTable()" style="max-width:360px; margin:0;">
+        <div style="display:flex; gap:0; border:1px solid #ddd; border-radius:6px; overflow:hidden;">
+          <button type="button" id="filterAll" onclick="setLangFilter('all')" style="padding:8px 14px; border:none; background:#e53e3e; color:#fff; cursor:pointer; font-size:13px;">전체</button>
+          <button type="button" id="filterKo" onclick="setLangFilter('ko')" style="padding:8px 14px; border:none; border-left:1px solid #ddd; background:#fff; color:#333; cursor:pointer; font-size:13px;">한국인</button>
+          <button type="button" id="filterEn" onclick="setLangFilter('en')" style="padding:8px 14px; border:none; border-left:1px solid #ddd; background:#fff; color:#333; cursor:pointer; font-size:13px;">외국인</button>
+        </div>
         <div id="regCountInfo" style="font-size:14px; color:#555; font-weight:600;"></div>
       </div>
       <div class="table-wrap">
@@ -763,11 +768,31 @@ const HTML_PAGE = `<!DOCTYPE html>
     renderCharts(allRows);
   }
 
+  var currentLangFilter = 'all';
+
+  function setLangFilter(lang) {
+    currentLangFilter = lang;
+    // 버튼 색상 토글
+    ['filterAll','filterKo','filterEn'].forEach(function(id) {
+      var b = document.getElementById(id);
+      b.style.background = '#fff';
+      b.style.color = '#333';
+    });
+    var activeId = lang === 'ko' ? 'filterKo' : lang === 'en' ? 'filterEn' : 'filterAll';
+    var activeBtn = document.getElementById(activeId);
+    activeBtn.style.background = '#e53e3e';
+    activeBtn.style.color = '#fff';
+    filterTable();
+  }
+
   function filterTable() {
     const q = document.getElementById('searchInput').value.trim().toLowerCase();
-    if (!q) { filteredRows = allRows; }
+    var rows = allRows;
+    if (currentLangFilter === 'ko') rows = rows.filter(r => !r.language || r.language === 'ko');
+    else if (currentLangFilter === 'en') rows = rows.filter(r => r.language === 'en');
+    if (!q) { filteredRows = rows; }
     else {
-      filteredRows = allRows.filter(r =>
+      filteredRows = rows.filter(r =>
         (r.name||'').toLowerCase().includes(q) ||
         (r.phone||'').includes(q) ||
         (r.reg_number||'').toLowerCase().includes(q) ||
@@ -1156,10 +1181,14 @@ app.http('exportExcel', {
 
       const workbook = new ExcelJS.Workbook();
       const sheet = workbook.addWorksheet('무료관람신청목록');
-      sheet.columns = [
+      const cols = [
         { header: '수신동의일', key: 'created_at', width: 20 },
         { header: '핸드폰번호', key: 'phone', width: 18 },
         { header: '성명', key: 'name', width: 12 },
+      ];
+      // 전체 다운로드일 때만 '구분' 컬럼 추가
+      if (!lang) cols.push({ header: '구분', key: 'category', width: 10 });
+      cols.push(
         { header: '국가', key: 'country', width: 15 },
         { header: '지역(시,도)', key: 'address_sido', width: 15 },
         { header: '지역(시,군,구)', key: 'address_sigungu', width: 15 },
@@ -1167,12 +1196,13 @@ app.http('exportExcel', {
         { header: '연령', key: 'age_group', width: 10 },
         { header: '직업군유형', key: 'job_type', width: 18 },
         { header: '소속(회사)', key: 'company', width: 20 }
-      ];
+      );
+      sheet.columns = cols;
       sheet.getRow(1).font = { bold: true };
       sheet.getRow(1).alignment = { horizontal: 'center' };
 
       rows.forEach(row => {
-        sheet.addRow({
+        const data = {
           created_at: row.created_at ? new Date(row.created_at) : null,
           phone: row.phone,
           name: row.name,
@@ -1183,7 +1213,9 @@ app.http('exportExcel', {
           age_group: row.age_group || '',
           job_type: row.job_type || '',
           company: row.company || ''
-        });
+        };
+        if (!lang) data.category = row.language === 'en' ? '외국인' : '한국인';
+        sheet.addRow(data);
       });
 
       sheet.eachRow((row, rowNumber) => {
