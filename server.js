@@ -151,6 +151,7 @@ app.post('/api/register', checkServerOpen, async (req, res) => {
     if (!name || !name.trim()) errors.push(isEn ? 'Please enter your name.' : '성명을 입력해주세요.');
     else if (/[0-9]/.test(name)) errors.push(isEn ? 'Name cannot contain numbers.' : '성명에 숫자를 입력할 수 없습니다.');
     else if (/[ㄱ-ㅎㅏ-ㅣ]/.test(name)) errors.push(isEn ? 'Please enter a valid name.' : '성명을 정확히 입력해주세요.');
+    else if (name.replace(/\s/g, '').length < 2) errors.push(isEn ? 'Name must be at least 2 characters.' : '성명을 2자 이상 입력해주세요.');
     if (!phone || phone.replace(/[^0-9]/g, '').length < 7) errors.push(isEn ? 'Please enter a valid phone number.' : '휴대폰 번호를 정확히 입력해주세요.');
     if (isEn && (!email || !email.trim())) errors.push('Email is required.');
     if (email && (email.match(/@/g) || []).length !== 1) errors.push(isEn ? 'Invalid email format.' : '이메일 형식이 올바르지 않습니다.');

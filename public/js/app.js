@@ -93,6 +93,8 @@ var I18N = {
 var ERR_I18N = {
   ko: {
     name: '성명을 입력해주세요.',
+    nameInvalid: '성명을 정확히 입력해주세요.',
+    nameTooShort: '성명을 정확히 입력해주세요.',
     phoneEmpty: '휴대폰 번호를 입력해주세요.',
     phoneInvalid: '휴대폰 번호를 정확히 입력해주세요.',
     sms: '문자(SMS), 카카오톡 수신 동의에 체크해주세요.',
@@ -115,6 +117,8 @@ var ERR_I18N = {
   },
   en: {
     name: 'Please enter your name.',
+    nameInvalid: 'Please enter a valid name.',
+    nameTooShort: 'Please enter a valid name.',
     phoneEmpty: 'Please enter your phone number.',
     phoneInvalid: 'Please enter a valid phone number.',
     sms: 'Please agree to SMS notifications.',
@@ -377,15 +381,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
   var nameComposing = false;
   nameInput.addEventListener('compositionstart', function() { nameComposing = true; });
-  nameInput.addEventListener('compositionend', function() {
-    nameComposing = false;
-    // 조합 끝나면 자모만 남은 거 정리
-    this.value = this.value.replace(/[^가-힣a-zA-Z\s.\-]/g, '');
-  });
+  nameInput.addEventListener('compositionend', function() { nameComposing = false; });
   nameInput.addEventListener('input', function() {
     if (!nameComposing) {
-      // 조합 중이 아닐 때만 필터링 (영문/숫자/특수문자 차단)
-      this.value = this.value.replace(/[^가-힣a-zA-Z\s.\-]/g, '');
+      // 조합 중이 아닐 때만 숫자/특수문자 차단 (한글/영문/공백/.- 만 허용)
+      // 자모(ㄱ-ㅎㅏ-ㅣ)는 통과시켜서 사용자가 보고 직접 수정하도록 함
+      this.value = this.value.replace(/[^가-힣ㄱ-ㅎㅏ-ㅣa-zA-Z\s.\-]/g, '');
     }
     if (this.value.trim()) {
       clearError('grpName', 'errName');
@@ -487,8 +488,19 @@ document.addEventListener('DOMContentLoaded', function() {
     var T = ERR_I18N[currentLang];
 
     // 성명
-    if (!nameInput.value.trim()) {
+    var nameVal = nameInput.value.trim();
+    if (!nameVal) {
       showError('grpName', 'errName', T.name);
+      setInputError(nameInput);
+      if (!firstEl) firstEl = document.getElementById('grpName');
+      valid = false;
+    } else if (/[ㄱ-ㅎㅏ-ㅣ]/.test(nameVal)) {
+      showError('grpName', 'errName', T.nameInvalid);
+      setInputError(nameInput);
+      if (!firstEl) firstEl = document.getElementById('grpName');
+      valid = false;
+    } else if (nameVal.replace(/\s/g,'').length < 2) {
+      showError('grpName', 'errName', T.nameTooShort);
       setInputError(nameInput);
       if (!firstEl) firstEl = document.getElementById('grpName');
       valid = false;
