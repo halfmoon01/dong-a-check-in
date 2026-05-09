@@ -1,3 +1,34 @@
+// ===== 국가 데이터 (영어이름, 국가코드, 한국어이름) =====
+var COUNTRIES = [
+  { en: 'United States',   code: '+1',   ko: '미국' },
+  { en: 'Japan',            code: '+81',  ko: '일본' },
+  { en: 'China',            code: '+86',  ko: '중국' },
+  { en: 'United Kingdom',   code: '+44',  ko: '영국' },
+  { en: 'Canada',           code: '+1',   ko: '캐나다' },
+  { en: 'Australia',        code: '+61',  ko: '호주' },
+  { en: 'Vietnam',          code: '+84',  ko: '베트남' },
+  { en: 'Philippines',      code: '+63',  ko: '필리핀' },
+  { en: 'Thailand',         code: '+66',  ko: '태국' },
+  { en: 'Indonesia',        code: '+62',  ko: '인도네시아' },
+  { en: 'Malaysia',         code: '+60',  ko: '말레이시아' },
+  { en: 'Singapore',        code: '+65',  ko: '싱가포르' },
+  { en: 'India',            code: '+91',  ko: '인도' },
+  { en: 'Germany',          code: '+49',  ko: '독일' },
+  { en: 'France',           code: '+33',  ko: '프랑스' },
+  { en: 'Italy',            code: '+39',  ko: '이탈리아' },
+  { en: 'Spain',            code: '+34',  ko: '스페인' },
+  { en: 'Netherlands',      code: '+31',  ko: '네덜란드' },
+  { en: 'Russia',           code: '+7',   ko: '러시아' },
+  { en: 'Brazil',           code: '+55',  ko: '브라질' },
+  { en: 'Mexico',           code: '+52',  ko: '멕시코' },
+  { en: 'Turkey',           code: '+90',  ko: '튀르키예' },
+  { en: 'Saudi Arabia',     code: '+966', ko: '사우디아라비아' },
+  { en: 'United Arab Emirates', code: '+971', ko: '아랍에미리트' },
+  { en: 'Taiwan',           code: '+886', ko: '대만' },
+  { en: 'Hong Kong',        code: '+852', ko: '홍콩' },
+  { en: 'Other',            code: '',     ko: '기타' }
+];
+
 // ===== 다국어 (i18n) =====
 var I18N = {
   ko: {
@@ -70,6 +101,8 @@ var ERR_I18N = {
     emailConsent: '이메일 수신 동의에 체크해주세요.',
     sido: '시/도를 선택해주세요.',
     sigungu: '시/군/구를 선택해주세요.',
+    country: '국가를 선택해주세요.',
+    company: '소속(회사)을 입력해주세요.',
     gender: '성별을 선택해주세요.',
     age: '연령대를 선택해주세요.',
     job: '직업군을 선택해주세요.',
@@ -90,6 +123,8 @@ var ERR_I18N = {
     emailConsent: 'Please agree to email notifications.',
     sido: 'Please select a region.',
     sigungu: 'Please select a district.',
+    country: 'Please select your country.',
+    company: 'Please enter your company.',
     gender: 'Please select your gender.',
     age: 'Please select your age group.',
     job: 'Please select your occupation.',
@@ -127,9 +162,23 @@ function switchLang(lang) {
   // 휴대폰 입력 방식 전환
   document.getElementById('phoneRowKo').style.display = lang === 'ko' ? '' : 'none';
   document.getElementById('phoneRowEn').style.display = lang === 'en' ? 'flex' : 'none';
-  // 영어 모드: 한국 주소 숨김 + 이메일 없음 버튼 숨김
+  // 영어 모드: 한국 주소 숨김 / 국가 드롭다운 표시 / 이메일 없음 버튼 숨김
   document.getElementById('grpAddress').style.display = lang === 'ko' ? 'block' : 'none';
+  document.getElementById('grpCountry').style.display = lang === 'en' ? 'block' : 'none';
   document.getElementById('btnNoEmail').style.display = lang === 'ko' ? 'inline-block' : 'none';
+  // 영어 모드: 회사 필수 표시 (소속 없음 체크박스 숨김)
+  var noCompanyRow = document.getElementById('noCompany').parentElement;
+  if (noCompanyRow) noCompanyRow.style.display = lang === 'en' ? 'none' : 'flex';
+  if (lang === 'en') {
+    document.getElementById('noCompany').checked = false;
+    document.getElementById('company').disabled = false;
+  }
+  // 회사 라벨에 필수 표시 (영어 모드)
+  var lblCo = document.querySelector('[data-i18n="lblCompany"]');
+  if (lblCo) {
+    var dict2 = I18N[lang];
+    lblCo.innerHTML = dict2.lblCompany + (lang === 'en' ? ' <span class="required">*</span>' : '');
+  }
   // 영어 모드면 이메일 입력 강제로 보이게
   if (lang === 'en') {
     document.getElementById('emailSection').style.display = 'block';
@@ -240,6 +289,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // ===== 시/도 & 시/군/구 =====
 
+  function populateCountries() {
+    var sel = document.getElementById('countrySelect');
+    if (!sel) return;
+    for (var i = 0; i < COUNTRIES.length; i++) {
+      var c = COUNTRIES[i];
+      var opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = c.en + (c.code ? ' (' + c.code + ')' : '');
+      sel.appendChild(opt);
+    }
+    sel.addEventListener('change', function() {
+      var idx = parseInt(this.value);
+      if (!isNaN(idx) && COUNTRIES[idx]) {
+        document.getElementById('phoneCountry').value = COUNTRIES[idx].code || '';
+        // 기타 선택 시 사용자가 직접 입력 가능하게
+        document.getElementById('phoneCountry').readOnly = !!COUNTRIES[idx].code;
+        clearError('grpCountry', 'errCountry');
+      } else {
+        document.getElementById('phoneCountry').value = '';
+        document.getElementById('phoneCountry').readOnly = true;
+      }
+    });
+  }
+
   function populateSido() {
     var keys = Object.keys(addressData);
     for (var i = 0; i < keys.length; i++) {
@@ -303,8 +376,8 @@ document.addEventListener('DOMContentLoaded', function() {
   // ===== 실시간 에러 해제 =====
 
   nameInput.addEventListener('input', function() {
-    // 숫자, 특수문자 제거 (한글/영문/공백/.만 허용)
-    this.value = this.value.replace(/[^가-힣ㄱ-ㅎㅏ-ㅣa-zA-Z\s.\-]/g, '');
+    // 완성 한글(가-힣) + 영문 + 공백 + .- 만 허용 (자음/모음 단독 입력 차단)
+    this.value = this.value.replace(/[^가-힣a-zA-Z\s.\-]/g, '');
     if (this.value.trim()) {
       clearError('grpName', 'errName');
       this.classList.remove('input-error');
@@ -473,7 +546,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 
-    // 주소 (한국어만)
+    // 주소 (한국어) / 국가 (영어)
     if (currentLang === 'ko') {
       if (!addressSido.value) {
         showError('grpAddress', 'errAddress', T.sido);
@@ -484,6 +557,24 @@ document.addEventListener('DOMContentLoaded', function() {
         showError('grpAddress', 'errAddress', T.sigungu);
         setInputError(addressSigungu);
         if (!firstEl) firstEl = document.getElementById('grpAddress');
+        valid = false;
+      }
+    } else {
+      var countrySel = document.getElementById('countrySelect');
+      if (!countrySel.value) {
+        showError('grpCountry', 'errCountry', T.country);
+        setInputError(countrySel);
+        if (!firstEl) firstEl = document.getElementById('grpCountry');
+        valid = false;
+      }
+    }
+
+    // 회사 (영어 모드 필수)
+    if (currentLang === 'en') {
+      if (!company.value.trim()) {
+        showError('grpCompany', 'errCompany', T.company);
+        setInputError(company);
+        if (!firstEl) firstEl = document.getElementById('grpCompany');
         valid = false;
       }
     }
@@ -569,6 +660,13 @@ document.addEventListener('DOMContentLoaded', function() {
     var jobTypeEl = document.querySelector('input[name="job_type"]:checked');
     var jobTypeVal = jobTypeEl ? (jobTypeEl.value === '기타' ? ('기타: ' + document.getElementById('jobEtcInput').value.trim()) : jobTypeEl.value) : null;
 
+    var countryKo = null;
+    if (currentLang === 'en') {
+      var cs = document.getElementById('countrySelect');
+      var idx = parseInt(cs.value);
+      if (!isNaN(idx) && COUNTRIES[idx]) countryKo = COUNTRIES[idx].ko;
+    }
+
     var body = {
       name: name,
       phone: phone,
@@ -582,7 +680,8 @@ document.addEventListener('DOMContentLoaded', function() {
       age_group: ageGroup ? ageGroup.value : null,
       job_type: jobTypeVal,
       privacy_consent: privacyConsent.checked,
-      language: currentLang
+      language: currentLang,
+      country: countryKo
     };
 
     fetch('/api/register', {
@@ -665,13 +764,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
       var msg1El = document.getElementById('completionMsg1');
       var msg2El = document.getElementById('completionMsg2');
-      if (settings.completion_msg1) {
-        msg1El.textContent = settings.completion_msg1;
+      var m1 = currentLang === 'en' ? (settings.completion_msg1_en || settings.completion_msg1) : settings.completion_msg1;
+      var m2 = currentLang === 'en' ? (settings.completion_msg2_en || settings.completion_msg2) : settings.completion_msg2;
+      if (m1) {
+        msg1El.textContent = m1;
         if (settings.completion_msg1_color) msg1El.style.color = settings.completion_msg1_color;
         if (settings.completion_msg1_size) msg1El.style.fontSize = settings.completion_msg1_size + 'px';
       }
-      if (settings.completion_msg2) {
-        msg2El.textContent = settings.completion_msg2;
+      if (m2) {
+        msg2El.textContent = m2;
         if (settings.completion_msg2_color) msg2El.style.color = settings.completion_msg2_color;
         if (settings.completion_msg2_size) msg2El.style.fontSize = settings.completion_msg2_size + 'px';
       }
@@ -684,6 +785,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // ===== 초기화 =====
   populateSido();
+  populateCountries();
   loadSettings();
 
   // 3초마다 설정 자동 갱신 (관리자 변경 실시간 반영)

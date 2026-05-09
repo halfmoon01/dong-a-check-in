@@ -32,7 +32,7 @@
       <h2 id="exhibitionName" style="font-size:20px; color:#333; padding:12px 20px;">현장 등록</h2>
       <div style="display:flex; justify-content:center; gap:0; padding:0 16px 12px;">
         <button type="button" id="btnLangKo" onclick="switchLang('ko')" style="flex:1; max-width:140px; padding:8px 12px; border:1px solid #e53e3e; background:#e53e3e; color:#fff; border-radius:6px 0 0 6px; cursor:pointer; font-size:13px; font-weight:600;">한국어</button>
-        <button type="button" id="btnLangEn" onclick="switchLang('en')" style="flex:1; max-width:140px; padding:8px 12px; border:1px solid #e53e3e; background:#fff; color:#e53e3e; border-radius:0 6px 6px 0; cursor:pointer; font-size:13px; font-weight:600;">English</button>
+        <button type="button" id="btnLangEn" onclick="switchLang('en')" style="flex:1; max-width:180px; padding:8px 12px; border:1px solid #e53e3e; background:#fff; color:#e53e3e; border-radius:0 6px 6px 0; cursor:pointer; font-size:13px; font-weight:600;">English (Foreigner)</button>
       </div>
     </div>
 
@@ -70,9 +70,9 @@
           <span class="phone-dash">-</span>
           <input type="tel" class="form-input" id="phoneLast" maxlength="4" placeholder="0000" inputmode="numeric">
         </div>
-        <!-- 영어: 국가번호 + 자유 입력 -->
+        <!-- 영어: 국가코드 (자동) + 자유 입력 -->
         <div id="phoneRowEn" style="display:none; gap:8px;">
-          <input type="text" class="form-input" id="phoneCountry" placeholder="+1" style="max-width:90px;" value="+1">
+          <input type="text" class="form-input" id="phoneCountry" placeholder="+1" style="max-width:90px;" readonly>
           <input type="tel" class="form-input" id="phoneFree" placeholder="Phone number" inputmode="tel">
         </div>
         <div class="error-msg" id="errPhone">휴대폰 번호를 정확히 입력해주세요.</div>
@@ -117,24 +117,34 @@
       <div class="form-group" id="grpCompany">
         <span class="form-label" data-i18n="lblCompany">소속(회사)</span>
         <input type="text" class="form-input" id="company" name="company" placeholder="소속 또는 회사명을 입력하세요" data-i18n-ph="phCompany">
+        <div class="error-msg" id="errCompany">소속(회사)을 입력해주세요.</div>
         <div class="checkbox-row" style="margin-top:8px;">
           <input type="checkbox" id="noCompany" onchange="document.getElementById('company').disabled=this.checked; if(this.checked) document.getElementById('company').value='';">
           <label for="noCompany" data-i18n="lblNoCompany">소속/회사 없음</label>
         </div>
       </div>
 
-      <!-- 주소 -->
+      <!-- 주소 (한국어 전용) -->
       <div class="form-group" id="grpAddress">
-        <span class="form-label" data-i18n="lblAddress">주소 <span class="required">*</span></span>
+        <span class="form-label">주소 <span class="required">*</span></span>
         <div class="address-row">
           <select class="form-select" id="addressSido" onchange="updateSigungu()">
-            <option value="" data-i18n="optSido">시/도 선택</option>
+            <option value="">시/도 선택</option>
           </select>
           <select class="form-select" id="addressSigungu">
-            <option value="" data-i18n="optSigungu">시/군/구 선택</option>
+            <option value="">시/군/구 선택</option>
           </select>
         </div>
         <div class="error-msg" id="errAddress">주소를 선택해주세요.</div>
+      </div>
+
+      <!-- 국가 (영어 전용) -->
+      <div class="form-group" id="grpCountry" style="display:none;">
+        <span class="form-label">Country <span class="required">*</span></span>
+        <select class="form-select" id="countrySelect">
+          <option value="">Select Country</option>
+        </select>
+        <div class="error-msg" id="errCountry">Please select your country.</div>
       </div>
 
       <!-- 성별 -->

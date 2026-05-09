@@ -207,8 +207,12 @@ const HTML_PAGE = `<!DOCTYPE html>
     <div class="card">
       <h3>등록 완료 안내 문구</h3>
       <div class="form-row">
-        <label>안내 문구 1 (큰 글씨)</label>
+        <label>안내 문구 1 (큰 글씨) - 한국어</label>
         <input class="admin-input" type="text" id="completionMsg1" placeholder="예: 입장권을 결제 후 입장해주세요 (1인당 1만원)">
+      </div>
+      <div class="form-row" style="margin-top:8px;">
+        <label>안내 문구 1 - English</label>
+        <input class="admin-input" type="text" id="completionMsg1En" placeholder="e.g. Please purchase a ticket before entry">
       </div>
       <div style="display:flex; gap:8px; margin-top:4px; flex-wrap:wrap;">
         <div style="flex:1; min-width:100px;">
@@ -220,9 +224,13 @@ const HTML_PAGE = `<!DOCTYPE html>
           <input class="admin-input" type="number" id="completionMsg1Size" value="17" min="10" max="40" style="margin:0;">
         </div>
       </div>
-      <div class="form-row" style="margin-top:12px;">
-        <label>안내 문구 2 (작은 글씨)</label>
+      <div class="form-row" style="margin-top:16px;">
+        <label>안내 문구 2 (작은 글씨) - 한국어</label>
         <input class="admin-input" type="text" id="completionMsg2" placeholder="예: *초청장을 소지하신분은 초청장을 제시해주세요">
+      </div>
+      <div class="form-row" style="margin-top:8px;">
+        <label>안내 문구 2 - English</label>
+        <input class="admin-input" type="text" id="completionMsg2En" placeholder="e.g. *Please present your invitation if available">
       </div>
       <div style="display:flex; gap:8px; margin-top:4px; flex-wrap:wrap;">
         <div style="flex:1; min-width:100px;">
@@ -235,11 +243,19 @@ const HTML_PAGE = `<!DOCTYPE html>
         </div>
       </div>
       <div style="margin-top:16px; padding:16px; background:#f9f9f9; border:1px dashed #ddd; border-radius:8px;">
-        <div style="font-size:12px; color:#aaa; margin-bottom:8px;">미리보기</div>
+        <div style="font-size:12px; color:#aaa; margin-bottom:8px;">미리보기 (한국어)</div>
         <div style="text-align:center;">
           <strong>현장등록이 완료되었습니다.</strong>
           <div id="previewMsg1" style="margin-top:12px; font-size:17px; font-weight:600;"></div>
           <div id="previewMsg2" style="margin-top:6px; font-size:13px; color:#888;"></div>
+        </div>
+      </div>
+      <div style="margin-top:8px; padding:16px; background:#f9f9f9; border:1px dashed #ddd; border-radius:8px;">
+        <div style="font-size:12px; color:#aaa; margin-bottom:8px;">Preview (English)</div>
+        <div style="text-align:center;">
+          <strong>Your registration is complete.</strong>
+          <div id="previewMsg1En" style="margin-top:12px; font-size:17px; font-weight:600;"></div>
+          <div id="previewMsg2En" style="margin-top:6px; font-size:13px; color:#888;"></div>
         </div>
       </div>
       <div class="btn-row">
@@ -425,6 +441,8 @@ const HTML_PAGE = `<!DOCTYPE html>
       document.getElementById('completionMsg2').value = settings.completion_msg2 || '';
       document.getElementById('completionMsg2Color').value = settings.completion_msg2_color || '#888888';
       document.getElementById('completionMsg2Size').value = settings.completion_msg2_size || '13';
+      document.getElementById('completionMsg1En').value = settings.completion_msg1_en || '';
+      document.getElementById('completionMsg2En').value = settings.completion_msg2_en || '';
       updateCompletionPreview();
 
       loadRegistrations();
@@ -495,8 +513,16 @@ const HTML_PAGE = `<!DOCTYPE html>
     p2.textContent = document.getElementById('completionMsg2').value || '(문구 2 미입력)';
     p2.style.color = document.getElementById('completionMsg2Color').value;
     p2.style.fontSize = document.getElementById('completionMsg2Size').value + 'px';
+    var p1en = document.getElementById('previewMsg1En');
+    var p2en = document.getElementById('previewMsg2En');
+    p1en.textContent = document.getElementById('completionMsg1En').value || '(message 1 not set)';
+    p1en.style.color = document.getElementById('completionMsg1Color').value;
+    p1en.style.fontSize = document.getElementById('completionMsg1Size').value + 'px';
+    p2en.textContent = document.getElementById('completionMsg2En').value || '(message 2 not set)';
+    p2en.style.color = document.getElementById('completionMsg2Color').value;
+    p2en.style.fontSize = document.getElementById('completionMsg2Size').value + 'px';
   }
-  ['completionMsg1','completionMsg1Color','completionMsg1Size','completionMsg2','completionMsg2Color','completionMsg2Size'].forEach(function(id) {
+  ['completionMsg1','completionMsg1Color','completionMsg1Size','completionMsg2','completionMsg2Color','completionMsg2Size','completionMsg1En','completionMsg2En'].forEach(function(id) {
     document.getElementById(id).addEventListener('input', updateCompletionPreview);
   });
 
@@ -508,6 +534,8 @@ const HTML_PAGE = `<!DOCTYPE html>
       { key: 'completion_msg2', value: document.getElementById('completionMsg2').value },
       { key: 'completion_msg2_color', value: document.getElementById('completionMsg2Color').value },
       { key: 'completion_msg2_size', value: document.getElementById('completionMsg2Size').value },
+      { key: 'completion_msg1_en', value: document.getElementById('completionMsg1En').value },
+      { key: 'completion_msg2_en', value: document.getElementById('completionMsg2En').value },
     ];
     for (var i = 0; i < fields.length; i++) {
       await fetch('/settings', {
@@ -796,7 +824,7 @@ const HTML_PAGE = `<!DOCTYPE html>
     rows.forEach((row, idx) => {
       const tr = document.createElement('tr');
       tr.id = 'row-' + row.id;
-      const address = [row.address_sido, row.address_sigungu].filter(Boolean).join(' ');
+      const address = row.language === 'en' ? (row.country || '-') : ([row.address_sido, row.address_sigungu].filter(Boolean).join(' '));
       const dateStr = row.created_at ? new Date(row.created_at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) : '';
       tr.innerHTML =
         '<td>' + (row._seq || (idx+1)) + '</td>' +
@@ -980,7 +1008,7 @@ app.http('postSettings', {
   handler: async (request) => {
     if (!await verifyAdmin(request)) return { status: 401, jsonBody: { error: '인증 실패' } };
     const { key, value } = await request.json();
-    const allowed = ['server_open', 'privacy_text', 'exhibition_name', 'admin_id', 'admin_pw', 'exhibition_logo', 'completion_msg1', 'completion_msg1_color', 'completion_msg1_size', 'completion_msg2', 'completion_msg2_color', 'completion_msg2_size'];
+    const allowed = ['server_open', 'privacy_text', 'exhibition_name', 'admin_id', 'admin_pw', 'exhibition_logo', 'completion_msg1', 'completion_msg1_color', 'completion_msg1_size', 'completion_msg2', 'completion_msg2_color', 'completion_msg2_size', 'completion_msg1_en', 'completion_msg2_en'];
     if (!allowed.includes(key)) return { status: 400, jsonBody: { error: '허용되지 않는 설정입니다.' } };
     try {
       const p = await getPool();
@@ -1132,6 +1160,7 @@ app.http('exportExcel', {
         { header: '수신동의일', key: 'created_at', width: 20 },
         { header: '핸드폰번호', key: 'phone', width: 18 },
         { header: '성명', key: 'name', width: 12 },
+        { header: '국가', key: 'country', width: 15 },
         { header: '지역(시,도)', key: 'address_sido', width: 15 },
         { header: '지역(시,군,구)', key: 'address_sigungu', width: 15 },
         { header: '이메일', key: 'email', width: 25 },
@@ -1147,6 +1176,7 @@ app.http('exportExcel', {
           created_at: row.created_at ? new Date(row.created_at) : null,
           phone: row.phone,
           name: row.name,
+          country: row.country || (row.language === 'en' ? '' : '대한민국'),
           address_sido: row.address_sido || '',
           address_sigungu: row.address_sigungu || '',
           email: row.email || '',
