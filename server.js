@@ -58,6 +58,11 @@ async function initDb() {
   `);
 
   await pool.request().query(`
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('registrations') AND name = 'referral')
+    ALTER TABLE registrations ADD referral NVARCHAR(100)
+  `);
+
+  await pool.request().query(`
     IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='settings' AND xtype='U')
     CREATE TABLE settings (
       [key] NVARCHAR(100) PRIMARY KEY,
@@ -144,7 +149,7 @@ app.post('/api/register', checkServerOpen, async (req, res) => {
     const {
       name, phone, sms_consent, email, email_consent,
       company, address_sido, address_sigungu,
-      gender, age_group, job_type, privacy_consent, language, country
+      gender, age_group, job_type, privacy_consent, language, country, referral
     } = req.body;
 
     const isEn = language === 'en';
@@ -164,6 +169,7 @@ app.post('/api/register', checkServerOpen, async (req, res) => {
     if (email && !email_consent) errors.push(isEn ? 'Please agree to email notifications.' : '이메일 수신 동의에 체크해주세요.');
     if (!age_group) errors.push(isEn ? 'Please select age group.' : '연령대를 선택해주세요.');
     if (!job_type) errors.push(isEn ? 'Please select job type.' : '직업군을 선택해주세요.');
+    if (!referral) errors.push(isEn ? 'Please select how you found out.' : '인지 경로를 선택해주세요.');
     if (!privacy_consent) errors.push(isEn ? 'Please agree to privacy policy.' : '개인정보 수집·이용에 동의해주세요.');
 
     if (errors.length > 0) {
@@ -197,9 +203,10 @@ app.post('/api/register', checkServerOpen, async (req, res) => {
       .input('reg_number', sql.NVarChar, regNumber)
       .input('language', sql.NVarChar, language || 'ko')
       .input('country', sql.NVarChar, country || null)
+      .input('referral', sql.NVarChar, referral || null)
       .query(`
-        INSERT INTO registrations (name, phone, sms_consent, email, email_consent, company, address_sido, address_sigungu, gender, age_group, job_type, privacy_consent, reg_number, language, country)
-        VALUES (@name, @phone, @sms_consent, @email, @email_consent, @company, @address_sido, @address_sigungu, @gender, @age_group, @job_type, @privacy_consent, @reg_number, @language, @country)
+        INSERT INTO registrations (name, phone, sms_consent, email, email_consent, company, address_sido, address_sigungu, gender, age_group, job_type, privacy_consent, reg_number, language, country, referral)
+        VALUES (@name, @phone, @sms_consent, @email, @email_consent, @company, @address_sido, @address_sigungu, @gender, @age_group, @job_type, @privacy_consent, @reg_number, @language, @country, @referral)
       `);
 
     res.json({ success: true, reg_number: regNumber, name, job_type });

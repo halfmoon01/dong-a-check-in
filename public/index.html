@@ -236,6 +236,41 @@
         <div class="error-msg" id="errJob">직업군을 선택해주세요.</div>
       </div>
 
+      <!-- 인지 경로 -->
+      <div class="form-group" id="grpReferral">
+        <span class="form-label" data-i18n="lblReferral">이번 동아전람 박람회를 인지하게 된 경로는 무엇입니까? <span class="required">*</span></span>
+        <div class="radio-group" style="flex-direction:column; gap:10px;">
+          <div class="radio-item">
+            <input type="radio" name="referral" id="ref1" value="동아전람 카카오톡 메세지" onchange="document.getElementById('refEtcWrap').style.display='none'">
+            <label for="ref1" data-i18n="optRef1">동아전람 카카오톡 메세지</label>
+          </div>
+          <div class="radio-item">
+            <input type="radio" name="referral" id="ref2" value="SNS(인스타그램)" onchange="document.getElementById('refEtcWrap').style.display='none'">
+            <label for="ref2" data-i18n="optRef2">SNS (인스타그램)</label>
+          </div>
+          <div class="radio-item">
+            <input type="radio" name="referral" id="ref3" value="YOUTUBE" onchange="document.getElementById('refEtcWrap').style.display='none'">
+            <label for="ref3" data-i18n="optRef3">YOUTUBE</label>
+          </div>
+          <div class="radio-item">
+            <input type="radio" name="referral" id="ref4" value="행사장 홈페이지" onchange="document.getElementById('refEtcWrap').style.display='none'">
+            <label for="ref4" data-i18n="optRef4">행사장 홈페이지</label>
+          </div>
+          <div class="radio-item">
+            <input type="radio" name="referral" id="ref5" value="동아전람 홈페이지" onchange="document.getElementById('refEtcWrap').style.display='none'">
+            <label for="ref5" data-i18n="optRef5">동아전람 홈페이지</label>
+          </div>
+          <div class="radio-item">
+            <input type="radio" name="referral" id="ref6" value="기타" onchange="document.getElementById('refEtcWrap').style.display='block'">
+            <label for="ref6" data-i18n="optRef6">기타 (직접 입력)</label>
+          </div>
+          <div id="refEtcWrap" style="display:none; padding-left:24px;">
+            <input type="text" id="refEtcInput" placeholder="인지 경로를 입력해주세요" data-i18n-ph="phRefEtc" style="width:100%; padding:10px 12px; border:1px solid #ddd; border-radius:6px; font-size:14px;">
+          </div>
+        </div>
+        <div class="error-msg" id="errReferral">인지 경로를 선택해주세요.</div>
+      </div>
+
       <!-- 개인정보 수집 동의 -->
       <div class="form-group" id="grpPrivacy">
         <span class="form-label" data-i18n="lblPrivacy">개인정보 수집·이용 동의 <span class="required">*</span></span>

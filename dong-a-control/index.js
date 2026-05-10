@@ -326,6 +326,10 @@ const HTML_PAGE = `<!DOCTYPE html>
           <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:8px;">성별</div>
           <div class="chart-box"><canvas id="chartGender"></canvas></div>
         </div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:8px;">인지 경로</div>
+          <div class="chart-box"><canvas id="chartReferral"></canvas></div>
+        </div>
       </div>
       <div style="font-size:14px;font-weight:700;color:#333;margin:16px 0 12px;">크로스 분석</div>
       <div class="chart-grid">
@@ -692,11 +696,21 @@ const HTML_PAGE = `<!DOCTYPE html>
     const genderCounts = {};
     rows.forEach(r => { const v = r.gender||'미입력'; genderCounts[v] = (genderCounts[v]||0)+1; });
 
+    // 6. 인지 경로
+    const refCounts = {};
+    rows.forEach(r => {
+      let v = r.referral || '미입력';
+      // "기타: xxx" 형식은 모두 "기타"로 집계
+      if (v.indexOf('기타') === 0) v = '기타';
+      refCounts[v] = (refCounts[v]||0)+1;
+    });
+
     makeChart('chartDaily', 'line', dayLabels, dayData);
     makeChart('chartAge', 'doughnut', Object.keys(ageCounts), Object.values(ageCounts));
     makeChart('chartRegion', 'bar', regionSorted.map(e=>e[0]), regionSorted.map(e=>e[1]));
     makeChart('chartJob', 'doughnut', Object.keys(jobCounts), Object.values(jobCounts));
     makeChart('chartGender', 'doughnut', Object.keys(genderCounts), Object.values(genderCounts));
+    makeChart('chartReferral', 'doughnut', Object.keys(refCounts), Object.values(refCounts));
 
     function makeStackedChart(id, labels, categoryKeys, countMap, colors) {
       if (chartInstances[id]) chartInstances[id].destroy();
@@ -1208,7 +1222,8 @@ app.http('exportExcel', {
         { header: '이메일', key: 'email', width: 25 },
         { header: '연령', key: 'age_group', width: 10 },
         { header: '직업군유형', key: 'job_type', width: 18 },
-        { header: '소속(회사)', key: 'company', width: 20 }
+        { header: '소속(회사)', key: 'company', width: 20 },
+        { header: '인지경로', key: 'referral', width: 25 }
       );
       sheet.columns = cols;
       sheet.getRow(1).font = { bold: true };
@@ -1225,7 +1240,8 @@ app.http('exportExcel', {
           email: row.email || '',
           age_group: row.age_group || '',
           job_type: row.job_type || '',
-          company: row.company || ''
+          company: row.company || '',
+          referral: row.referral || ''
         };
         if (!lang) data.category = row.language === 'en' ? '외국인' : '한국인';
         sheet.addRow(data);

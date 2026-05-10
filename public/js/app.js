@@ -1,5 +1,6 @@
 // ===== 국가 데이터 (영어이름, 국가코드, 한국어이름) =====
 var COUNTRIES = [
+  // 자주 쓰일 국가 우선 배치
   { en: 'United States',   code: '+1',   ko: '미국' },
   { en: 'Japan',            code: '+81',  ko: '일본' },
   { en: 'China',            code: '+86',  ko: '중국' },
@@ -26,7 +27,116 @@ var COUNTRIES = [
   { en: 'United Arab Emirates', code: '+971', ko: '아랍에미리트' },
   { en: 'Taiwan',           code: '+886', ko: '대만' },
   { en: 'Hong Kong',        code: '+852', ko: '홍콩' },
-  { en: 'Other',            code: '',     ko: '기타' }
+  // 알파벳순 나머지
+  { en: 'Afghanistan',      code: '+93',  ko: '아프가니스탄' },
+  { en: 'Albania',          code: '+355', ko: '알바니아' },
+  { en: 'Algeria',          code: '+213', ko: '알제리' },
+  { en: 'Angola',           code: '+244', ko: '앙골라' },
+  { en: 'Argentina',        code: '+54',  ko: '아르헨티나' },
+  { en: 'Armenia',          code: '+374', ko: '아르메니아' },
+  { en: 'Austria',          code: '+43',  ko: '오스트리아' },
+  { en: 'Azerbaijan',       code: '+994', ko: '아제르바이잔' },
+  { en: 'Bahrain',          code: '+973', ko: '바레인' },
+  { en: 'Bangladesh',       code: '+880', ko: '방글라데시' },
+  { en: 'Belarus',          code: '+375', ko: '벨라루스' },
+  { en: 'Belgium',          code: '+32',  ko: '벨기에' },
+  { en: 'Bolivia',          code: '+591', ko: '볼리비아' },
+  { en: 'Bosnia and Herzegovina', code: '+387', ko: '보스니아 헤르체고비나' },
+  { en: 'Botswana',         code: '+267', ko: '보츠와나' },
+  { en: 'Brunei',           code: '+673', ko: '브루나이' },
+  { en: 'Bulgaria',         code: '+359', ko: '불가리아' },
+  { en: 'Cambodia',         code: '+855', ko: '캄보디아' },
+  { en: 'Cameroon',         code: '+237', ko: '카메룬' },
+  { en: 'Chile',            code: '+56',  ko: '칠레' },
+  { en: 'Colombia',         code: '+57',  ko: '콜롬비아' },
+  { en: 'Costa Rica',       code: '+506', ko: '코스타리카' },
+  { en: 'Croatia',          code: '+385', ko: '크로아티아' },
+  { en: 'Cuba',             code: '+53',  ko: '쿠바' },
+  { en: 'Cyprus',           code: '+357', ko: '키프로스' },
+  { en: 'Czech Republic',   code: '+420', ko: '체코' },
+  { en: 'Denmark',          code: '+45',  ko: '덴마크' },
+  { en: 'Dominican Republic', code: '+1',  ko: '도미니카공화국' },
+  { en: 'Ecuador',          code: '+593', ko: '에콰도르' },
+  { en: 'Egypt',            code: '+20',  ko: '이집트' },
+  { en: 'El Salvador',      code: '+503', ko: '엘살바도르' },
+  { en: 'Estonia',          code: '+372', ko: '에스토니아' },
+  { en: 'Ethiopia',          code: '+251', ko: '에티오피아' },
+  { en: 'Finland',          code: '+358', ko: '핀란드' },
+  { en: 'Georgia',          code: '+995', ko: '조지아' },
+  { en: 'Ghana',            code: '+233', ko: '가나' },
+  { en: 'Greece',           code: '+30',  ko: '그리스' },
+  { en: 'Guatemala',        code: '+502', ko: '과테말라' },
+  { en: 'Honduras',         code: '+504', ko: '온두라스' },
+  { en: 'Hungary',          code: '+36',  ko: '헝가리' },
+  { en: 'Iceland',          code: '+354', ko: '아이슬란드' },
+  { en: 'Iran',             code: '+98',  ko: '이란' },
+  { en: 'Iraq',             code: '+964', ko: '이라크' },
+  { en: 'Ireland',          code: '+353', ko: '아일랜드' },
+  { en: 'Israel',           code: '+972', ko: '이스라엘' },
+  { en: 'Jamaica',          code: '+1',   ko: '자메이카' },
+  { en: 'Jordan',           code: '+962', ko: '요르단' },
+  { en: 'Kazakhstan',       code: '+7',   ko: '카자흐스탄' },
+  { en: 'Kenya',            code: '+254', ko: '케냐' },
+  { en: 'Kuwait',           code: '+965', ko: '쿠웨이트' },
+  { en: 'Kyrgyzstan',       code: '+996', ko: '키르기스스탄' },
+  { en: 'Laos',             code: '+856', ko: '라오스' },
+  { en: 'Latvia',           code: '+371', ko: '라트비아' },
+  { en: 'Lebanon',          code: '+961', ko: '레바논' },
+  { en: 'Libya',            code: '+218', ko: '리비아' },
+  { en: 'Lithuania',        code: '+370', ko: '리투아니아' },
+  { en: 'Luxembourg',       code: '+352', ko: '룩셈부르크' },
+  { en: 'Macau',            code: '+853', ko: '마카오' },
+  { en: 'Madagascar',       code: '+261', ko: '마다가스카르' },
+  { en: 'Maldives',         code: '+960', ko: '몰디브' },
+  { en: 'Malta',            code: '+356', ko: '몰타' },
+  { en: 'Mauritius',        code: '+230', ko: '모리셔스' },
+  { en: 'Moldova',          code: '+373', ko: '몰도바' },
+  { en: 'Monaco',           code: '+377', ko: '모나코' },
+  { en: 'Mongolia',         code: '+976', ko: '몽골' },
+  { en: 'Montenegro',       code: '+382', ko: '몬테네그로' },
+  { en: 'Morocco',          code: '+212', ko: '모로코' },
+  { en: 'Mozambique',       code: '+258', ko: '모잠비크' },
+  { en: 'Myanmar',          code: '+95',  ko: '미얀마' },
+  { en: 'Namibia',          code: '+264', ko: '나미비아' },
+  { en: 'Nepal',            code: '+977', ko: '네팔' },
+  { en: 'New Zealand',      code: '+64',  ko: '뉴질랜드' },
+  { en: 'Nicaragua',        code: '+505', ko: '니카라과' },
+  { en: 'Nigeria',          code: '+234', ko: '나이지리아' },
+  { en: 'North Macedonia',  code: '+389', ko: '북마케도니아' },
+  { en: 'Norway',           code: '+47',  ko: '노르웨이' },
+  { en: 'Oman',             code: '+968', ko: '오만' },
+  { en: 'Pakistan',         code: '+92',  ko: '파키스탄' },
+  { en: 'Palestine',        code: '+970', ko: '팔레스타인' },
+  { en: 'Panama',           code: '+507', ko: '파나마' },
+  { en: 'Paraguay',         code: '+595', ko: '파라과이' },
+  { en: 'Peru',             code: '+51',  ko: '페루' },
+  { en: 'Poland',           code: '+48',  ko: '폴란드' },
+  { en: 'Portugal',         code: '+351', ko: '포르투갈' },
+  { en: 'Qatar',            code: '+974', ko: '카타르' },
+  { en: 'Romania',          code: '+40',  ko: '루마니아' },
+  { en: 'Rwanda',           code: '+250', ko: '르완다' },
+  { en: 'Senegal',          code: '+221', ko: '세네갈' },
+  { en: 'Serbia',           code: '+381', ko: '세르비아' },
+  { en: 'Slovakia',         code: '+421', ko: '슬로바키아' },
+  { en: 'Slovenia',         code: '+386', ko: '슬로베니아' },
+  { en: 'South Africa',     code: '+27',  ko: '남아프리카공화국' },
+  { en: 'Sri Lanka',        code: '+94',  ko: '스리랑카' },
+  { en: 'Sudan',            code: '+249', ko: '수단' },
+  { en: 'Sweden',           code: '+46',  ko: '스웨덴' },
+  { en: 'Switzerland',      code: '+41',  ko: '스위스' },
+  { en: 'Syria',            code: '+963', ko: '시리아' },
+  { en: 'Tajikistan',       code: '+992', ko: '타지키스탄' },
+  { en: 'Tanzania',         code: '+255', ko: '탄자니아' },
+  { en: 'Tunisia',          code: '+216', ko: '튀니지' },
+  { en: 'Turkmenistan',     code: '+993', ko: '투르크메니스탄' },
+  { en: 'Uganda',           code: '+256', ko: '우간다' },
+  { en: 'Ukraine',          code: '+380', ko: '우크라이나' },
+  { en: 'Uruguay',          code: '+598', ko: '우루과이' },
+  { en: 'Uzbekistan',       code: '+998', ko: '우즈베키스탄' },
+  { en: 'Venezuela',        code: '+58',  ko: '베네수엘라' },
+  { en: 'Yemen',            code: '+967', ko: '예멘' },
+  { en: 'Zambia',           code: '+260', ko: '잠비아' },
+  { en: 'Zimbabwe',         code: '+263', ko: '짐바브웨' }
 ];
 
 // ===== 다국어 (i18n) =====
@@ -56,6 +166,14 @@ var I18N = {
     lblAddress: '주소 <span class="required">*</span>',
     optSido: '시/도 선택',
     optSigungu: '시/군/구 선택',
+    lblReferral: '이번 동아전람 박람회를 인지하게 된 경로는 무엇입니까? <span class="required">*</span>',
+    optRef1: '동아전람 카카오톡 메세지',
+    optRef2: 'SNS (인스타그램)',
+    optRef3: 'YOUTUBE',
+    optRef4: '행사장 홈페이지',
+    optRef5: '동아전람 홈페이지',
+    optRef6: '기타 (직접 입력)',
+    phRefEtc: '인지 경로를 입력해주세요',
     lblPrivacy: '개인정보 수집·이용 동의 <span class="required">*</span>',
     lblPrivacyConsent: '위 개인정보 수집·이용에 동의합니다. (필수)',
     btnSubmit: '현장 등록'
@@ -85,6 +203,14 @@ var I18N = {
     lblAddress: 'Address <span class="required">*</span>',
     optSido: 'Select Region',
     optSigungu: 'Select District',
+    lblReferral: 'How did you find out about this Dong-A Exhibition? <span class="required">*</span>',
+    optRef1: 'Dong-A KakaoTalk message',
+    optRef2: 'SNS (Instagram)',
+    optRef3: 'YOUTUBE',
+    optRef4: 'Event venue homepage',
+    optRef5: 'Dong-A homepage',
+    optRef6: 'Other (specify)',
+    phRefEtc: 'Please specify',
     lblPrivacy: 'Privacy Policy Agreement <span class="required">*</span>',
     lblPrivacyConsent: 'I agree to the collection and use of personal information. (Required)',
     btnSubmit: 'Register'
@@ -109,6 +235,8 @@ var ERR_I18N = {
     age: '연령대를 선택해주세요.',
     job: '직업군을 선택해주세요.',
     jobEtc: '직업군을 직접 입력해주세요.',
+    referral: '인지 경로를 선택해주세요.',
+    referralEtc: '인지 경로를 직접 입력해주세요.',
     privacy: '개인정보 수집·이용에 동의해주세요.',
     submitting: '등록 중...',
     closed: '현재 등록이 마감되었습니다.',
@@ -133,6 +261,8 @@ var ERR_I18N = {
     age: 'Please select your age group.',
     job: 'Please select your occupation.',
     jobEtc: 'Please specify your occupation.',
+    referral: 'Please select how you found out about this exhibition.',
+    referralEtc: 'Please specify how you found out.',
     privacy: 'Please agree to the privacy policy.',
     submitting: 'Registering...',
     closed: 'Registration is currently closed.',
@@ -481,6 +611,11 @@ document.addEventListener('DOMContentLoaded', function() {
     ageRadios[i].addEventListener('change', function() { clearError('grpAge', 'errAge'); });
   }
 
+  var refRadios = document.querySelectorAll('input[name="referral"]');
+  for (var i = 0; i < refRadios.length; i++) {
+    refRadios[i].addEventListener('change', function() { clearError('grpReferral', 'errReferral'); });
+  }
+
   var jobRadios = document.querySelectorAll('input[name="job_type"]');
   for (var i = 0; i < jobRadios.length; i++) {
     jobRadios[i].addEventListener('change', function() {
@@ -645,6 +780,21 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 
+    // 인지 경로
+    var refChecked = document.querySelector('input[name="referral"]:checked');
+    if (!refChecked) {
+      showError('grpReferral', 'errReferral', T.referral);
+      if (!firstEl) firstEl = document.getElementById('grpReferral');
+      valid = false;
+    } else if (refChecked.value === '기타') {
+      var refEtcVal = document.getElementById('refEtcInput').value.trim();
+      if (!refEtcVal) {
+        showError('grpReferral', 'errReferral', T.referralEtc);
+        if (!firstEl) firstEl = document.getElementById('grpReferral');
+        valid = false;
+      }
+    }
+
     // 개인정보 동의
     if (!privacyConsent.checked) {
       showError('grpPrivacy', 'errPrivacy', T.privacy);
@@ -698,6 +848,8 @@ document.addEventListener('DOMContentLoaded', function() {
     var ageGroup = document.querySelector('input[name="age_group"]:checked');
     var jobTypeEl = document.querySelector('input[name="job_type"]:checked');
     var jobTypeVal = jobTypeEl ? (jobTypeEl.value === '기타' ? ('기타: ' + document.getElementById('jobEtcInput').value.trim()) : jobTypeEl.value) : null;
+    var referralEl = document.querySelector('input[name="referral"]:checked');
+    var referralVal = referralEl ? (referralEl.value === '기타' ? ('기타: ' + document.getElementById('refEtcInput').value.trim()) : referralEl.value) : null;
 
     var countryKo = null;
     if (currentLang === 'en') {
@@ -720,7 +872,8 @@ document.addEventListener('DOMContentLoaded', function() {
       job_type: jobTypeVal,
       privacy_consent: privacyConsent.checked,
       language: currentLang,
-      country: countryKo
+      country: countryKo,
+      referral: referralVal
     };
 
     fetch('/api/register', {
