@@ -1249,7 +1249,7 @@ app.http('exportExcel', {
 
       sheet.eachRow((row, rowNumber) => {
         if (rowNumber === 1) return;
-        row.getCell(1).numFmt = 'yyyy-mm-dd hh:mm:ss';
+        row.getCell(1).numFmt = 'yyyy-mm-dd hh:mm';
       });
 
       const buffer = await workbook.xlsx.writeBuffer();
